@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" >
+
+ <head>
+
+  <link rel="stylesheet" type="text/css" media="all" href="iip.compressed.css" />
+  <link rel="shortcut icon" href="images/iip-favicon.png" />
+  <title>Tweaking the IIPMooViewer 1.1 :: IIPImage High Resolution Ajax Image Viewer</title>
+
+  <script type="text/javascript" src="js/mootools-1.2-core-compressed.js"></script>
+  <script type="text/javascript" src="js/mootools-1.2-more-compressed.js"></script>
+  <script type="text/javascript" src="js/iipmooviewer-1.1-compressed.js"></script>
+
+  <script type="text/javascript">
+
+    // The iipsrv server full URL
+    var server = '/~56k/fcgi-bin/iipsrv.fcgi';
+
+    // The *full* image path on the server. This path does *not* need to be in the web
+    // server root directory. On Windows, use Unix style forward slash paths without
+    // the "c:" prefix
+    var images = '/Users/56k/phd/code/mooviewer-port/moov-demo/test.tiff';
+
+    // Copyright or information message
+    var credit = 'Musee du Louvre, Paris<br/>8272 x 1712 pixels<br/>Image copyright &copy; Ruven Pillay 2006';
+
+    // Create our viewer object - note: must assign this to the 'iip' variable
+    iip = new IIP( "targetframe", {
+		image: images,
+		server: server,
+		credit: credit, 
+		controls: false,
+		zoom: 1,
+		render: 'spiral',
+        showNavButtons: true
+    });
+
+  </script>
+
+ </head>
+
+ <body>
+   <div style="width:99%;height:99%;margin-left:auto;margin-right:auto" id="targetframe"></div>
+ </body>
+
+</html>
