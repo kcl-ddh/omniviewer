@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" >
+
+ <head>
+  <meta name="author" content="Ruven Pillay &lt;ruven@users.sourceforge.netm&gt;"/>
+  <meta name="keywords" content="IIPImage Ajax Internet Imaging Protocol IIP Zooming Streaming High Resolution Mootools"/>
+  <meta name="description" content="IIPImage: High Resolution Remote Image Streaming Viewing"/>
+  <meta name="copyright" content="&copy; 2003-2008 Ruven Pillay"/>
+
+  <link rel="stylesheet" type="text/css" media="all" href="css/iip.compressed.css" />
+<link rel="stylesheet" type="text/css" media="all" href="css/cch.css" />
+  <link rel="shortcut icon" href="images/iip-favicon.png" />
+  <title>IIPMooViewer 1.1 :: IIPImage High Resolution Ajax Image Streaming Viewer</title>
+
+  <script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
+  <script type="text/javascript" src="js/jquery-ui-1.8.5.custom.min.js"></script>
+  <script type="text/javascript" src="js/jquery.iipviewer.js"></script>
+
+  <script type="text/javascript">
+
+    // The iipsrv server path (/fcgi-bin/iipsrv.fcgi by default)
+    var server = '/~56k/fcgi-bin/iipsrv.fcgi';
+
+    // The *full* image path on the server. This path does *not* need to be in the web
+    // server root directory. On Windows, use Unix style forward slash paths without
+    // the "c:" prefix
+    var images = '/Users/56k/phd/code/mooviewer-port/moov-demo/cch_image.tif';
+
+    // Copyright or information message
+    var credit = '&copy; copyright or information message';
+
+    // Create our viewer object - note: must assign this to the 'iip' variable.
+    // See documentation for more details of options
+    /*
+	iip = new IIP( "targetframe", {
+		image: images,
+		server: server,
+		credit: credit, 
+		zoom: 1,
+		render: 'random',
+                showNavButtons: true
+    });*/
+	$(function() {
+			$( "#target" ).draggable({ containment: 'document'
+									, scroll:false
+									,stop: function(event, ui) {
+											var xmove =  - $('#target').offset().left;
+			    							var ymove =  - $('#target').offset().top;
+											console.log("end pos: " + xmove + " " + ymove);
+									}
+									,start:function(event, ui) {
+										var top = $('#target').offset().left;
+										var left = $('#target').offset().top-10;
+										console.log("start pos: " + top + " " + left);
+									}
+								}
+						);	
+		});
+		
+		$(document).ready(function() {
+			$("#targetframe").IIP({value: ' xzy'});
+		});	  
+	
+  </script>
+
+ </head>
+
+ <body>
+   <div style="width:99%;height:99%;margin-left:auto;margin-right:auto" id="targetframe">
+		<div style="cursor: move; left: 0px; top: 0px;" id="target"/>
+   </div>
+ </body>
+
+</html>
