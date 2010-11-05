@@ -130,6 +130,9 @@
 			$(this).createWindows();
 			
 		 },
+		 error:function(){
+		 	$(this).log_error("Unable to get image and tile sizes from server!");
+		 },
 		});
 		return;
 	}
@@ -139,12 +142,14 @@
     $.fn.createNavigationWindow = function(){
     	$(this).log("called createNavigationWindow()");
     	
-    	var navcontainer = null;
+    	var navcontainer = $('<div id="navcontainer"></div>').css("width",$.min_x).css("height",10);
     	
-    	var toolbar = null;
+    	var toolbar = $('<div id="navcontainer"></div>').css("width",$.min_x);
+    	// attach dblclick event
     	
     	// Create our navigation div and inject it inside our frame
-    	var navwin = null;
+    	var navwin = $('<div id="navwin"></div>').css("width",$.min_x).css("height",$.min_y);
+    	navwin.append(navcontainer);
     	
     	// Create our navigation image and inject inside the div we just created
     	var navimage = null;
