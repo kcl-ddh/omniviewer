@@ -26,22 +26,11 @@
     // The *full* image path on the server. This path does *not* need to be in the web
     // server root directory. On Windows, use Unix style forward slash paths without
     // the "c:" prefix
-    var images = ['/Users/56k/phd/code/mooviewer-port/moov-demo/cch_image.tif'];
+    var images = ['/Users/56k/phd/code/mooviewer/moov-demo/cch_image.tif'];
 	//var images = '/Users/56k/phd/code/mooviewer-port/moov-demo/cch_image.tif';
     // Copyright or information message
     var credit = '&copy; CCH';
 
-    // Create our viewer object - note: must assign this to the 'iip' variable.
-    // See documentation for more details of options
-    /*
-	iip = new IIP( "targetframe", {
-		image: images,
-		server: server,
-		credit: credit, 
-		zoom: 1,
-		render: 'random',
-                showNavButtons: true
-    });*/
 	$(function() {
 			$( "#target" ).draggable({ containment: 'document'
 									, scroll:false
@@ -67,6 +56,7 @@
 				,zoom: 1
 				,render: 'random'
                 ,showNavButtons: true
+                ,debug : true
 			});
 		});	  
 	

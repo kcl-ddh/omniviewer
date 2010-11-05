@@ -1,10 +1,6 @@
-var DEBUG = true;
-// funciton to wrap firebug logging functionality and avoid errors when firebug's turned off
-var log = function(msg){
-	if(DEBUG){
-		console.log(msg);
-	}
-};
+/*
+* Author: Matteo Romanello
+*/
 // the object embedding the plugin
 (function($){
 	$.source = null;
@@ -12,7 +8,9 @@ var log = function(msg){
 	
 	// Initialise various variables
 	$.fn.initialise = function(options){
-		$.source = this.attr("id") ||  alert( 'No element ID given to IIP constructor' );
+		$.debug = options.debug;
+		$.source = "#";
+		$.source += this.attr("id") ||  alert( 'No element ID given to IIP constructor' );
 		
 		$.server = options.server || '/fcgi-bin/iipsrv.fcgi';
 		
@@ -64,13 +62,136 @@ var log = function(msg){
 		// Number of tiles loaded
 		$.nTilesLoaded = 0;
 		$.nTilesToLoad = 0;
+		$(this).log_info('plugin IIP initialised');
+		$(this).load();
 		}
 
-	$.fn.createWindows = function(value){
-		/*var target_size = $(this.source).getSize();
-    	var winWidth = target_size.x;
-    	var winHeight = target_size.y;*/
-		log('test create windows'+value);
+	$.fn.calculateMinSizes = function(){
+		var tx = $.max_width;
+		var ty = $.max_height;
+		var thumb = 100;
+	
+		var winWidth = $($.source).width();
+		var winHeight = $($.source).height();
+	
+		if( winWidth>winHeight ){
+		  // For panoramic images, use a large navigation window
+		  if( tx > 2*ty ) thumb = winWidth / 2;
+		  else thumb = winWidth / 4;
+		}
+		else thumb = winHeight / 4;
+	
+		var r = $.res;
+		while( tx > thumb ){
+		  tx = parseInt(tx / 2);
+		  ty = parseInt(ty / 2);
+		  // Make sure we don't set our navigation image too small!
+		  if( --r == 1 ) break;
+		}
+		$.min_x = tx;
+		$.min_y = ty;
+	
+		// Determine the resolution for this image view
+		tx = $.max_width;
+		ty = $.max_height;
+		while( tx > winWidth && ty > winHeight ){
+		  tx = parseInt(tx / 2);
+		  ty = parseInt(ty / 2);
+		  $.res--;
+		}
+		$.wid = tx;
+		$.hei = ty;
+		$.res--;
+		return;
+	}
+	/*
+	* Calls the IIPImage server
+	*/
+	$.fn.load = function(){
+		var query_string = "&obj=IIP,1.0&obj=Max-size&obj=Tile-size&obj=Resolution-number";
+		// issue the ajax query
+		$.ajax({
+		 url: $.server + "?" +"FIF=" + $.images[0].src + query_string,
+		 success: function(data){
+			var response = data || alert( "No response from server " + $.server );
+			$(this).log_info(response);
+			var tmp = response.split( "Max-size" );
+			if(!tmp[1]) alert( "Unexpected response from server " + $.server );
+			var size = tmp[1].split(" ");
+	    	$.max_width = parseInt( size[0].substring(1,size[0].length) );
+	    	$.max_height = parseInt( size[1] );
+	    	tmp = response.split( "Tile-size" );
+			size = tmp[1].split(" ");
+			$.tileSize[0] = parseInt( size[0].substring(1,size[0].length) );
+			$.tileSize[1] = parseInt( size[1] );
+			tmp = response.split( "Resolution-number" );
+			$.num_resolutions = parseInt( tmp[1].substring(1,tmp[1].length) );
+			$.res = this.num_resolutions;
+			$(this).createWindows();
+			
+		 },
+		});
+		return;
+	}
+	/*
+	* Create our navigation window
+    */
+    $.fn.createNavigationWindow = function(){
+    	$(this).log("called createNavigationWindow()");
+    	
+    	var navcontainer = null;
+    	
+    	var toolbar = null;
+    	
+    	// Create our navigation div and inject it inside our frame
+    	var navwin = null;
+    	
+    	// Create our navigation image and inject inside the div we just created
+    	var navimage = null;
+    	
+    	// Create our navigation zone and inject inside the navigation div
+    	var zone = null;
+    	
+    	// Create our progress bar
+    	var loadBarContainer = null;
+    	
+    	// Create our nav buttons
+    	var navbuttons = null;
+    }
+
+	$.fn.createWindows = function(){
+		$(this).log_info("createWindows called");
+		var winWidth = $($.source).width();
+		var winHeight = $($.source).height();
+		
+		// Calculate some sizes and create the navigation window
+    	$(this).calculateMinSizes();
+    	$(this).createNavigationWindow();
+		
+		return;
+	}
+	$.fn.log = function(msg){
+		if($.debug){
+			console.log(msg);
+		}
+		return;
+	}
+	// wrap
+	$.fn.log_info = function(msg){
+		if($.debug){
+			console.info(msg);
+		}
+		return;
+	}
+	
+	$.fn.log_error = function(msg){
+		if($.debug){
+			console.error(msg);
+		}
+		else{
+			alert(msg);
+		}
+		return;
 	}
 
 	$.fn.IIP = function(options) {
@@ -81,9 +202,7 @@ var log = function(msg){
 		var options = $.extend(defaults, options);
 		
     	return this.each(function() {
-			log('plugin IIP initialised');
 			$(this).initialise(options);
-			//$(this).createWindows(options.value);
 			return false;
     	});
  	};
