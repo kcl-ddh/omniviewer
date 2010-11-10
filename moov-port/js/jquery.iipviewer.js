@@ -143,27 +143,91 @@
     	$(this).log("called createNavigationWindow()");
     	
     	var navcontainer = $('<div id="navcontainer"></div>').css("width",$.min_x).css("height",10);
-    	
-    	var toolbar = $('<div id="navcontainer"></div>').css("width",$.min_x);
-    	// attach dblclick event
+    	// we'll worry later about how to change the @title into a proper tooltip
+    	var toolbar = $('<div id="toolbar"></div>').css("width",$.min_x).attr("title",'* Drag to move. Double Click to show/hide navigation buttons');
+    	navcontainer.append(toolbar);
     	
     	// Create our navigation div and inject it inside our frame
     	var navwin = $('<div id="navwin"></div>').css("width",$.min_x).css("height",$.min_y);
-    	navwin.append(navcontainer);
+    	navcontainer.append(navwin);
     	
     	// Create our navigation image and inject inside the div we just created
-    	var navimage = null;
+    	var src = $.server + '?FIF=' + $.images[0].src + '&SDS=' + $.images[0].sds + '&CNT=1.0' +'&WID=' + $.min_x + '&QLT=99&CVT=jpeg';
+    	var navimage = $('<img id="navigation"/>').attr("src",src);
+    	navwin.append(navimage);
     	
     	// Create our navigation zone and inject inside the navigation div
-    	var zone = null;
+    	var zone = $('<div id="zone"></div>').css("width",$.min_x/2).css("height",$.min_y/2).css("opacity",0.4);
+    	navwin.append(zone);
     	
     	// Create our progress bar
-    	var loadBarContainer = null;
+    	var loadBarContainer = $('<div id="loadBarContainer"></div>').css("width",$.min_x-2).css("height",10).append($('<div id="loadBar"></div>'));
     	
     	// Create our nav buttons
-    	var navbuttons = null;
+    	var navbuttons = $('<img id="shiftLeft" src="images/left.png"/><img id="shiftUp" src="images/up.png"/><img id="shiftRight" src="images/right.png"/><br/><img id="shiftDown" src="images/down.png"/><br/><img id="zoomIn" src="images/zoomIn.png"/><img id="zoomOut" src="images/zoomOut.png"/><img id="reset" src="images/reset.png"/>');
+    	navbuttons = $("<div/>").attr("id","navbuttons").append(navbuttons);
+    	navcontainer.append(navbuttons);
+    	navcontainer.append(loadBarContainer);
+    	// and then snap it into the page
+    	$($.source).append(navcontainer);
+    	// Hide our navigation buttons if requested
+    	if( $.showNavButtons == false ) {
+    		// act accordingly
+    		return;
+    	};
+    	
+    	$('#zone').draggable({
+    						containment:"#navwin"
+    						,stop: function(event, ui) {
+								$(this).scrollNavigation();
+							}
+							,start:function(event, ui) {
+								// let's see, we might have to use position() instead
+								$.navpos = [$('#zone').position().left, $('#zone').position().top-10];
+								//$(this).log($.navpos);
+							}
+    	});
+    	
+    	navcontainer.draggable( {containment:$.source, handle:"toolbar"} );
+    	
+    	// ADD EVENT BINDINGS TO NAV BUTTONS
+    	$('#zoomIn').bind( 'click', $(this).zoomIn);
+		$('#zoomOut').bind( 'click', $(this).zoomOut);
+		$('#reset').bind( 'click', function(){
+			window.location=window.location; 
+		});
+		$('#shiftLeft').bind( 'click', function(){
+			$(this).scrollTo(-$.rgn_w/3,0); 
+		});
+		$('#shiftUp').bind( 'click', function(){
+			$(this).scrollTo(-$.rgn_h/3,0); 
+		});
+		$('#shiftDown').bind( 'click', function(){
+			$(this).scrollTo($.rgn_h/3,0); 
+		});
+		$('#shiftRight').bind( 'click', function(){
+			$(this).scrollTo($.rgn_w/3,0); 
+		});
+		
+		// TODO for the time being I leave behind minor events bound to mousewheel and #zone.click
     }
-
+    
+    $.fn.scrollNavigation = function(){
+   		$(this).log("called scroll navigation");
+    }
+    
+    $.fn.scrollTo = function(dx,dy){
+   		$(this).log("called scroll navigation "+dx+" "+dy);
+    }
+    
+    $.fn.zoomIn = function(){
+   		$(this).log("called zoom in");
+    }
+	
+	$.fn.zoomOut = function(){
+   		$(this).log("called zoom out");
+    }
+	
 	$.fn.createWindows = function(){
 		$(this).log_info("createWindows called");
 		var winWidth = $($.source).width();
@@ -172,9 +236,92 @@
 		// Calculate some sizes and create the navigation window
     	$(this).calculateMinSizes();
     	$(this).createNavigationWindow();
-		
+    	
+    	// Create our main window target div, add our events and inject inside the frame
+    	var el = $('<div id="target"></div>').css("cursor","move");
+    	$($.source).append(el);
+		$("#target" ).draggable({ containment: 'document'
+									,scroll:false
+									,stop: function(event, ui) {
+											return;
+									}
+									,start:function(event, ui) {
+											return;
+									}
+								});
+		$.rgn_w = winWidth;
+    	$.rgn_h = winHeight;
+    	
+    	$(this).reCenter();
+    	
+    	for(var i=0;i<$(this).initialZoom;i++) $(this).zoomIn();
+   		$(this).zoomOut();
+    	$(this).requestImages();
+    	$(this).positionZone();
+    	
 		return;
 	}
+	
+	/* 
+   	*/
+	$.fn.positionZone = function(){
+   		$(this).log("called positionZone");
+   		
+   		var pleft = ($.rgn_x/$.wid) * ($.min_x);
+		if( pleft > $.min_x ) pleft = $.min_x;
+		if( pleft < 0 ) pleft = 0;
+	
+		var ptop = ($.rgn_y/$.hei) * ($.min_y);
+		if( ptop > $.min_y ) ptop = $.min_y;
+		if( ptop < 0 ) ptop = 0;
+	
+		var width = ($.rgn_w/$.wid) * ($.min_x);
+		if( pleft+width > $.min_x ) width = $.min_x - pleft;
+	
+		var height = ($.rgn_h/$.hei) * ($.min_y);
+		if( height+ptop > $.min_y ) height = $.min_y - ptop;
+	
+		if( width < $.min_x ) $.xfit = 0;
+		else $.xfit = 1;
+		if( height < $.min_y ) $.yfit = 0;
+		else $.yfit = 1;
+	
+		// replace w/ $(window).width(), $(window).height()
+		var border = $('zone').offsetHeight - $('zone').clientHeight;
+	
+		// Move the zone to the new size and position
+		// replace w/ animate
+		/*
+		$('zone').morph({
+		left: pleft,
+		top: ptop + 10, // 10px for the toolbar
+		width: width - border/2,
+		height: height - border/2
+		});*/
+	}
+	
+	/* 
+   	*/
+	$.fn.loadGrid = function(){
+   		$(this).log("called loadGrid()");
+   		
+   		
+	}
+	
+	/* 
+   	*/
+	$.fn.requestImages = function(){
+   		$(this).log("called requestImages");
+	}
+	
+	/* Recenter the image view
+   	*/
+	$.fn.reCenter = function(){
+		$.rgn_x = ($.wid-$.rgn_w)/2;
+   		$.rgn_y = ($.hei-$.rgn_h)/2;
+   		$(this).log("called reCenter "+$.rgn_x +" "+ $.rgn_y);
+	}
+	
 	$.fn.log = function(msg){
 		if($.debug){
 			console.log(msg);
