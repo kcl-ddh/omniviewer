@@ -42,6 +42,7 @@ div#navwin div#zone {
   border: 2px solid yellow;
   cursor: move;
   z-index: 3;
+  position:absolute;
 }
 div#target{
   width: 100%;

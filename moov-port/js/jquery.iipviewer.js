@@ -126,7 +126,7 @@
 			$.tileSize[1] = parseInt( size[1] );
 			tmp = response.split( "Resolution-number" );
 			$.num_resolutions = parseInt( tmp[1].substring(1,tmp[1].length) );
-			$.res = this.num_resolutions;
+			$.res = $.num_resolutions;
 			$(this).createWindows();
 			
 		 },
@@ -148,7 +148,7 @@
     	navcontainer.append(toolbar);
     	
     	// Create our navigation div and inject it inside our frame
-    	var navwin = $('<div id="navwin"></div>').css("width",$.min_x).css("height",$.min_y);
+    	var navwin = $('<div id="navwin"></div>').css("width",$.min_x).css("height",$.min_y).css("position","relative");
     	navcontainer.append(navwin);
     	
     	// Create our navigation image and inject inside the div we just created
@@ -182,9 +182,7 @@
 								$(this).scrollNavigation();
 							}
 							,start:function(event, ui) {
-								// let's see, we might have to use position() instead
 								$.navpos = [$('#zone').position().left, $('#zone').position().top-10];
-								//$(this).log($.navpos);
 							}
     	});
     	
@@ -218,14 +216,99 @@
     
     $.fn.scrollTo = function(dx,dy){
    		$(this).log("called scroll navigation "+dx+" "+dy);
+   		if( dx || dy ){
+		  // To avoid unnecessary redrawing ...
+		  if( (Math.abs(dx) < 3) && (Math.abs(dy) < 3) ) return;
+		  $(this).checkBounds(dx,dy);
+		  $(this).requestImages();
+		  $(this).positionZone();
+		}
     }
     
     $.fn.zoomIn = function(){
    		$(this).log("called zoom in");
+   		if( ($.wid <= ($.max_width/2)) && ($.hei <= ($.max_height/2)) ){
+		   $.res++;
+		   $.wid = $.max_width;
+		   $.hei = $.max_height;
+		   for( var i=$.res; i<$.num_resolutions-1; i++ ){
+		 $.wid = Math.floor($.wid/2);
+		 $.hei = Math.floor($.hei/2);
+		   }
+	 
+		   if( $.xfit == 1 ){
+		 $.rgn_x = $.wid/2 - ($.rgn_w/2);
+		   }
+		   else if( $.wid > $.rgn_w ) $.rgn_x = 2*$.rgn_x + $.rgn_w/2;
+	 
+		   if( $.rgn_x > $.wid ) $.rgn_x = $.wid - $.rgn_w;
+		   if( $.rgn_x < 0 ) $.rgn_x = 0;
+	 
+		   if( $.yfit == 1 ){
+		 $.rgn_y = $.hei/2 - ($.rgn_h/2);
+		   }
+		   else if( $.hei > $.rgn_h ) $.rgn_y = $.rgn_y*2 + $.rgn_h/2;
+	 
+		   if( $.rgn_y > $.hei ) $.rgn_y = $.hei - $.rgn_h;
+		   if( $.rgn_y < 0 ) $.rgn_y = 0;
+	 
+		   $(this).requestImages();
+		   $(this).positionZone();
+		   if( $.scale ) $(this).setScale();
+	 
+		 }
+    }
+    
+    $.fn.checkBounds = function(dx,dy){
+   		var x = $.rgn_x + dx;
+		var y = $.rgn_y + dy;
+	
+		if( x > $.wid - $.rgn_w ) x = $.wid - $.rgn_w;
+		if( y > $.hei - $.rgn_h ) y = $.hei - $.rgn_h;
+		if( x < 0 ) x = 0;
+		if( y < 0 ) y = 0;
+	
+		$.rgn_x = x;
+		$.rgn_y = y;
     }
 	
 	$.fn.zoomOut = function(){
    		$(this).log("called zoom out");
+   		if( ($.wid > $.rgn_w) || ($.hei > $.rgn_h) ){
+		  $.res--;
+		  $.wid = $.max_width;
+		  $.hei = $.max_height;
+		  for( var i=$.res; i<$.num_resolutions-1; i++ ){
+		$.wid = Math.floor($.wid/2);
+		$.hei = Math.floor($.hei/2);
+		  }
+	
+		  $.rgn_x = $.rgn_x/2 - ($.rgn_w/4);
+		  if( $.rgn_x + $.rgn_w > $.wid ) $.rgn_x = $.wid - $.rgn_w;
+		  if( $.rgn_x < 0 ){
+		$.xfit=1;
+		$.rgn_x = 0;
+		  }
+		  else $.xfit = 0;
+	
+		  $.rgn_y = $.rgn_y/2 - ($.rgn_h/4);
+		  if( $.rgn_y + $.rgn_h > $.hei ) $.rgn_y = $.hei - $.rgn_h;
+		  if( $.rgn_y < 0 ){
+		$.yfit=1;
+		$.rgn_y = 0;
+		  }
+		  else $.yfit = 0;
+	
+		  $(this).requestImages();
+		  $(this).positionZone();
+		  //if( $.scale ) this.setScale();
+		}
+    }
+    
+    $.fn.scroll = function(){
+    	var xmove =  - $('#target').offset().left;
+		var ymove =  - $('#target').offset().top;
+		$(this).scrollTo( xmove, ymove );
     }
 	
 	$.fn.createWindows = function(){
@@ -240,15 +323,54 @@
     	// Create our main window target div, add our events and inject inside the frame
     	var el = $('<div id="target"></div>').css("cursor","move");
     	$($.source).append(el);
-		$("#target" ).draggable({ containment: 'document'
-									,scroll:false
+		$("#target" ).draggable({scroll:true
 									,stop: function(event, ui) {
+											$(this).scroll();
 											return;
 									}
 									,start:function(event, ui) {
 											return;
 									}
 								});
+		$("#target" ).bind("drag",function(event,ui) {
+  							//event.preventDefault();
+  							$(this).log(ui.position);
+  							var top = ui.position.top;
+  							var left = ui.position.left;
+  							var out;
+  							// check X
+  							if( $.rgn_x - left < 0 ){
+							   ui.position.left = $.rgn_x;
+							   out = true;
+							 }
+							 if( $.wid > $.rgn_w ){
+							   if( $.rgn_x - left > $.wid - $.rgn_w ){
+								 ui.position.left = -($.wid - $.rgn_w - $.rgn_x);
+								 out = true;
+							   }
+							 }
+							 else{
+							   ui.position.left = 0;
+							   out = true;
+							 }
+  							
+  							//check Y
+  							if( ($.rgn_y - ui.position.top) < 0 ){
+							   ui.position.top = $.rgn_y;
+							   out = true;
+							 }
+							 if( $.hei > $.rgn_h ){
+							   if( $.rgn_y - ui.position.top > $.hei - $.rgn_h ){
+								 ui.position.top = -($.hei - $.rgn_h - $.rgn_y);
+								 out = true;
+							   }
+							 }
+							 else{
+							   ui.position.top = 0;
+							   out = true;
+							 }
+						}
+  					);
 		$.rgn_w = winWidth;
     	$.rgn_h = winHeight;
     	
@@ -285,33 +407,139 @@
 		else $.xfit = 1;
 		if( height < $.min_y ) $.yfit = 0;
 		else $.yfit = 1;
-	
-		// replace w/ $(window).width(), $(window).height()
-		var border = $('zone').offsetHeight - $('zone').clientHeight;
-	
-		// Move the zone to the new size and position
-		// replace w/ animate
-		/*
-		$('zone').morph({
-		left: pleft,
-		top: ptop + 10, // 10px for the toolbar
-		width: width - border/2,
-		height: height - border/2
-		});*/
+		
+		var border = $('#zone')[0].offsetHeight - $('#zone')[0].clientHeight;
+		// #zone.#navwin CSS position attribute needs to be absolute
+		$("#zone").animate({
+							"left":pleft,
+							"top":ptop,
+							"width": width - border/2,
+							"height": height - border/2
+							}, 500);
 	}
 	
 	/* 
    	*/
 	$.fn.loadGrid = function(){
-   		$(this).log("called loadGrid()");
+   		$(this).log("rgn_x",$.rgn_x);
    		
-   		
-	}
+   		 //var pos = $($.source).getPosition();
+
+		// Delete our old image mosaic
+		$('#target').children().remove();
+		$('#target').css("left",0).css("top",0);
+		
+		// Get the start points for our tiles
+	   var startx = Math.floor( $.rgn_x / $.tileSize[0] );
+	   var starty = Math.floor( $.rgn_y / $.tileSize[1] );
+   	
+	  // If our size is smaller than the display window, only get these tiles!
+	  var len = $.rgn_w;
+	  if( $.wid < $.rgn_w ) len = $.wid;
+	  var endx =  Math.floor( (len + $.rgn_x) / $.tileSize[0]);
+	  
+	  len = $.rgn_h;
+	  if( $.hei < $.rgn_h ) len = $.hei;
+	  var endy = Math.floor( (len + $.rgn_y) / $.tileSize[1]);
+	  
+	  // Number of tiles is dependent on view width and height
+	  var xtiles = Math.ceil($.wid / $.tileSize[0]);
+	  var ytiles = Math.ceil($.hei / $.tileSize[1]);
+	  
+	  /* Calculate the offset from the tile top left that we want to display.
+       Also Center the image if our viewable image is smaller than the window
+	  */
+	  var xoffset = Math.floor($.rgn_x % $.tileSize[0]);
+	  if( $.wid < $.rgn_w ) xoffset -=  ($.rgn_w - $.wid)/2;
+  
+	  var yoffset = Math.floor($.rgn_y % $.tileSize[1]);
+	  if( $.hei < $.rgn_h ) yoffset -= ($.rgn_h - $.hei)/2;
+  
+	  var tile;
+	  var i, j, k, n;
+	  var left, top;
+	  k = 0;
+	  n = 0;
+	  
+	  var centerx = startx + Math.round((endx-startx)/2);
+	  var centery = starty + Math.round((endy-starty)/2);
+  
+	  var map = new Array((endx-startx)*(endx-startx));
+  
+	  // Should put this into 
+	  var ntiles=0;
+	  for( j=starty; j<=endy; j++ ){
+		for (i=startx;i<=endx; i++) {
+  
+			map[ntiles] = {};
+			if( $.render == 'spiral' ){
+			  // Calculate the distance from the centre of the image
+			  map[ntiles].n = Math.abs(centery-j)* Math.abs(centery-j) + Math.abs(centerx-i)*Math.abs(centerx-i);
+			}
+			// Otherwise do a random rendering
+			else map[ntiles].n = Math.random();
+		
+			map[ntiles].x = i;
+			map[ntiles].y = j;
+			ntiles++;
+		}
+	  }
+	  
+	  $.nTilesLoaded = 0;
+	  $.nTilesToLoad = ntiles*$.images.length;
+
+	  map.sort(function s(a,b){return a.n - b.n;});
+	  
+	  for( var m=0; m<ntiles; m++ ){
+		var i = map[m].x;
+		var j = map[m].y;
+  
+		// Sequential index of the tile in the tif image
+		k = i + (j*xtiles);
+  
+		// Iterate over the number of layers we have
+		var n;
+		for(n=0;n<$.images.length;n++){
+		  $(this).log("Writing tile element");
+		  tile = $("<img />").attr("class",'layer'+n).css("left",(i-startx)*$.tileSize[0] - xoffset).css("top",(j-starty)*$.tileSize[1] - yoffset);
+		  tile.bind("load",function(){$.nTilesLoaded++;})
+		  /*,
+		'events': {
+		   load: function(){
+		   this.nTilesLoaded++;
+		   this.refreshLoadBar();
+		   }.bind(this),
+		   error: function(){ this.src=this.src; } // Try to reload if we have an error
+		}*/
+  
+	  // We set the source at the end so that the 'load' function is properly fired
+		  var src = $.server+"?FIF="+$.images[n].src+"&cnt="+$.contrast+"&sds="+$.images[n].sds+"&jtl="+$.res+"," + k;
+		  tile.attr( 'src', src );
+		  $("#target").append(tile);
+		}
+		
+	  }
+  		/*
+	  if($.images.length > 1 ){
+		var selector = 'img.layer'+(n-1);
+		$$(selector).set( 'opacity', this.opacity );
+	  }
+	  */
+	  
+	  }
 	
 	/* 
    	*/
 	$.fn.requestImages = function(){
-   		$(this).log("called requestImages");
+   		// bypassed the refresher for the time being
+	
+		// Set our cursor
+		$('#target').css( 'cursor', 'wait' );
+	
+		// Load our image mosaic
+		$(this).loadGrid();
+	
+		// bypassed the refresher for the time being
 	}
 	
 	/* Recenter the image view
@@ -324,7 +552,7 @@
 	
 	$.fn.log = function(msg){
 		if($.debug){
-			console.log(msg);
+			$(this).log(msg);
 		}
 		return;
 	}
