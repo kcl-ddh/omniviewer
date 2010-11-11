@@ -179,7 +179,7 @@
     	$('#zone').draggable({
     						containment:"#navwin"
     						,stop: function(event, ui) {
-								$(this).scrollNavigation();
+								$(this).scrollNavigation(event,ui);
 							}
 							,start:function(event, ui) {
 								$.navpos = [$('#zone').position().left, $('#zone').position().top-10];
@@ -210,8 +210,28 @@
 		// TODO for the time being I leave behind minor events bound to mousewheel and #zone.click
     }
     
-    $.fn.scrollNavigation = function(){
+    $.fn.scrollNavigation = function(ev,ui){
    		$(this).log("called scroll navigation");
+   		var xmove = 0;
+		var ymove = 0;
+	
+		var zone_w = $("#zone").width();
+		var zone_h = $("#zone").height();
+		//console.log(ui.position);
+		  xmove = ui.position.left;
+		  ymove = ui.position.top-10;
+		  if( (Math.abs(xmove-$.navpos[0]) < 3) && (Math.abs(ymove-$.navpos[1]) < 3) ) return;
+	
+		if( xmove > ($.min_x - zone_w) ) xmove = $.min_x - zone_w;
+		if( ymove > ($.min_y - zone_h) ) ymove = $.min_y - zone_h;
+		if( xmove < 0 ) xmove = 0;
+		if( ymove < 0 ) ymove = 0;
+	
+		$.rgn_x = Math.round(xmove * $.wid / $.min_x);
+		$.rgn_y = Math.round(ymove * $.hei / $.min_y);
+	 
+		$(this).requestImages();
+		//if( e.event ) this.positionZone();
     }
     
     $.fn.scrollTo = function(dx,dy){
