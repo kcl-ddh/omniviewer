@@ -1,6 +1,7 @@
 /*
 * Author: Matteo Romanello
 */
+
 // the object embedding the plugin
 (function($){
 	$.source = null;
@@ -184,8 +185,9 @@
 		imageSize[0] = $.max_width;
 		imageSize[1] = $.max_height;
 		
-		$.tierSizeInTiles.push( tiles );
+		$.tierSizeInTiles.push(new Array(tiles[0],tiles[1]));
 		$.tierImageSize.push( imageSize );
+		//console.log("d"+tiles);
 
 		while (imageSize[0] > $.standardTileSize ||
 		       imageSize[1] > $.standardTileSize ) {
@@ -195,9 +197,11 @@
 			
 			tiles[0] = Math.ceil( imageSize[0] / $.standardTileSize );        
 			tiles[1] = Math.ceil( imageSize[1] / $.standardTileSize );
-			
-		    $.tierSizeInTiles.push( tiles );
+			//console.log("pre "+$.tierSizeInTiles);
+		    $.tierSizeInTiles.push(new Array(tiles[0],tiles[1]));
+		    //console.log("post "+$.tierSizeInTiles);
 		    $.tierImageSize.push( imageSize );
+		    //console.log($.tierImageSize);
 		}
 
 		$.tierSizeInTiles.reverse();
@@ -206,10 +210,14 @@
 
 		$.tileCountUpToTier[0] = 0;      
 		for (var i = 1; i < $.numberOfTiers; i++) {
+			//console.log("$.tierSizeInTiles tier=%i %i",i-1,$.tierSizeInTiles[i-1][0]);
+			var temp = $.tierSizeInTiles[i-1][0] * $.tierSizeInTiles[i-1][1] +
+		        $.tileCountUpToTier[i-1];
+		    //console.log("tileCountUpToTier %i",temp);
 		    $.tileCountUpToTier.push(
-		        $.tierSizeInTiles[i-1][0] * $.tierSizeInTiles[i-1][1] +
-		        $.tileCountUpToTier[i-1]
+		        temp
 		        );
+		    //console.log("$.tileCountUpToTier tier=%i %i",i,temp);
 		}
 		$.num_resolutions = $.numberOfTiers;
 		$.res = $.num_resolutions;
@@ -334,7 +342,7 @@
     }
     
     $.fn.zoomIn = function(){
-   		$(this).log("called zoom in");
+   		//console.log("called zoom in");
    		if( ($.wid <= ($.max_width/2)) && ($.hei <= ($.max_height/2)) ){
 		   $.res++;
 		   $.wid = $.max_width;
@@ -363,8 +371,9 @@
 		   $(this).requestImages();
 		   if($.showNavigation){
 		   	$(this).positionZone();
-		   	if( $.scale ) $(this).setScale();
+		   	
 		   }
+		   if( $.scale ) $(this).setScale();
 	 
 		 }
     }
@@ -632,8 +641,10 @@
 		  if($.fileFormat == "tiff")
 		  	src = $.server+"?FIF="+$.images[n].src+"&cnt="+$.contrast+"&sds="+$.images[n].sds+"&jtl="+$.res+"," + k;
 		  else{
-			var tileIndex = i + j * $.tierSizeInTiles[$.res-1].w + $.tileCountUpToTier[$.res-1]; 
-			var tileIndex = 0;
+			var tileIndex = i + j * $.tierSizeInTiles[$.res][0] + $.tileCountUpToTier[$.res];
+			tileIndex=parseInt(tileIndex/256);
+			
+			
 		  	src = "http://localhost/~56k/mooviewer/moov-port-zoom/VF_0178/"+"TileGroup"+tileIndex+"/"+$.res+"-"+i+"-"+j+".jpg";
 			}
 		  tile.attr( 'src', src );

@@ -12,7 +12,7 @@
   <link rel="stylesheet" type="text/css" media="all" href="css/iip.compressed.css" />
 <link rel="stylesheet" type="text/css" media="all" href="css/cch.css" />
   <link rel="shortcut icon" href="images/iip-favicon.png" />
-  <title>IIPMooViewer 1.1 :: IIPImage High Resolution Ajax Image Streaming Viewer</title>
+  <title>jQuery OmniViewer 1.0-alpha [IIP image server]</title>
 
   <script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
   <script type="text/javascript" src="js/jquery-ui-1.8.5.custom.min.js"></script>
@@ -30,23 +30,6 @@
 	//var images = '/Users/56k/phd/code/mooviewer-port/moov-demo/cch_image.tif';
     // Copyright or information message
     var credit = '&copy; CCH';
-	/*
-	$(function() {
-			$( "#target" ).draggable({ containment: 'document'
-									, scroll:false
-									,stop: function(event, ui) {
-											var xmove =  - $('#target').offset().left;
-			    							var ymove =  - $('#target').offset().top;
-											console.log("end pos: " + xmove + " " + ymove);
-									}
-									,start:function(event, ui) {
-										var top = $('#target').offset().left;
-										var left = $('#target').offset().top-10;
-										console.log("start pos: " + top + " " + left);
-									}
-								}
-						);	
-		});*/
 		
 		$(document).ready(function() {
 			$("#targetframe").IIP({
