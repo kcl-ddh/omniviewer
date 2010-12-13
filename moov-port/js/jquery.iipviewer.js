@@ -25,6 +25,9 @@
     	}
     	else $.images = [{ src:options.image, sds:"0,90"} ];
     	
+    	$.fileFormat = options.fileFormat;
+    	console.log($.fileFormat);
+    	
     	$.credit = options.credit || null;
     	
     	$.scale = options.scale || null;
@@ -58,7 +61,14 @@
 		$.tileSize = [0,0];
 		$.num_resolutions = 0;
 		$.res;
+		$.standardTileSize = 256;
 		$.refresher = null;
+		// if zoomify
+		if($.fileFormat == "zoomify"){
+			$.tileCountUpToTier = new Array();
+			$.tierSizeInTiles = new Array();
+			$.tierImageSize = new Array();
+		}
 		// Number of tiles loaded
 		$.nTilesLoaded = 0;
 		$.nTilesToLoad = 0;
@@ -108,33 +118,98 @@
 	* Calls the IIPImage server
 	*/
 	$.fn.load = function(){
-		var query_string = "&obj=IIP,1.0&obj=Max-size&obj=Tile-size&obj=Resolution-number";
-		// issue the ajax query
-		$.ajax({
-		 url: $.server + "?" +"FIF=" + $.images[0].src + query_string,
-		 success: function(data){
-			var response = data || alert( "No response from server " + $.server );
-			$(this).log_info(response);
-			var tmp = response.split( "Max-size" );
-			if(!tmp[1]) alert( "Unexpected response from server " + $.server );
-			var size = tmp[1].split(" ");
-	    	$.max_width = parseInt( size[0].substring(1,size[0].length) );
-	    	$.max_height = parseInt( size[1] );
-	    	tmp = response.split( "Tile-size" );
-			size = tmp[1].split(" ");
-			$.tileSize[0] = parseInt( size[0].substring(1,size[0].length) );
-			$.tileSize[1] = parseInt( size[1] );
-			tmp = response.split( "Resolution-number" );
-			$.num_resolutions = parseInt( tmp[1].substring(1,tmp[1].length) );
-			$.res = $.num_resolutions;
-			$(this).createWindows();
-			
-		 },
-		 error:function(){
-		 	$(this).log_error("Unable to get image and tile sizes from server!");
-		 },
-		});
+		if($.fileFormat == "tiff"){
+			var query_string = "&obj=IIP,1.0&obj=Max-size&obj=Tile-size&obj=Resolution-number";
+			// issue the ajax query
+			$.ajax({
+			 url: $.server + "?" +"FIF=" + $.images[0].src + query_string,
+			 success: function(data){
+				var response = data || alert( "No response from server " + $.server );
+				$(this).log_info(response);
+				var tmp = response.split( "Max-size" );
+				if(!tmp[1]) alert( "Unexpected response from server " + $.server );
+				var size = tmp[1].split(" ");
+				$.max_width = parseInt( size[0].substring(1,size[0].length) );
+				$.max_height = parseInt( size[1] );
+				tmp = response.split( "Tile-size" );
+				size = tmp[1].split(" ");
+				$.tileSize[0] = parseInt( size[0].substring(1,size[0].length) );
+				$.tileSize[1] = parseInt( size[1] );
+				tmp = response.split( "Resolution-number" );
+				$.num_resolutions = parseInt( tmp[1].substring(1,tmp[1].length) );
+				$.res = $.num_resolutions;
+				$(this).createWindows();
+				
+			 },
+			 error:function(){
+				$(this).log_error("Unable to get image and tile sizes from server!");
+			 },
+			});
+		}
+		else{
+			var query_string = "ImageProperties.xml";
+			$.ajax({
+			 url: $.server + "/"+$.images[0].src + "/"+ query_string,
+			 success: function(data){
+				$.max_width = parseInt(0);
+				$.max_height = parseInt(1);
+				$.tileSize[0] = $.standardTileSize;
+				$.tileSize[1] = $.standardTileSize;
+				$(data).find("IMAGE_PROPERTIES").each(function(){
+					$.max_width = parseInt($(this).attr("WIDTH"));
+					$.max_height = parseInt($(this).attr("HEIGHT"));
+					$.tileSize[0] = parseInt($(this).attr("TILESIZE"));
+					$.tileSize[1] = $.tileSize[0];
+				});
+				var response = data || alert( "No response from server " + $.server );
+				$(this).initialiseZoomify();
+				$(this).createWindows();
+			 },
+			 error:function(){
+				$(this).log_error("Unable to get image and tile sizes from server!");
+			 },
+			});
+		}
 		return;
+	}
+	$.fn.initialiseZoomify = function(){
+		//var imageSize = size.clone();
+		var tiles = [2];
+		var imageSize =  [2];
+		tiles[0] = Math.ceil( $.max_width / $.standardTileSize );
+		tiles[1] = Math.ceil( $.max_height / $.standardTileSize );
+		imageSize[0] = $.max_width;
+		imageSize[1] = $.max_height;
+		
+		$.tierSizeInTiles.push( tiles );
+		$.tierImageSize.push( imageSize );
+
+		while (imageSize[0] > $.standardTileSize ||
+		       imageSize[1] > $.standardTileSize ) {
+
+		    imageSize[0] = Math.floor( imageSize[0]/ 2 );
+			imageSize[1] = Math.floor( imageSize[1] / 2 );
+			
+			tiles[0] = Math.ceil( imageSize[0] / $.standardTileSize );        
+			tiles[1] = Math.ceil( imageSize[1] / $.standardTileSize );
+			
+		    $.tierSizeInTiles.push( tiles );
+		    $.tierImageSize.push( imageSize );
+		}
+
+		$.tierSizeInTiles.reverse();
+		$.tierImageSize.reverse();
+		$.numberOfTiers = $.tierSizeInTiles.length;
+
+		$.tileCountUpToTier[0] = 0;      
+		for (var i = 1; i < $.numberOfTiers; i++) {
+		    $.tileCountUpToTier.push(
+		        $.tierSizeInTiles[i-1][0] * $.tierSizeInTiles[i-1][1] +
+		        $.tileCountUpToTier[i-1]
+		        );
+		}
+		$.num_resolutions = $.numberOfTiers;
+		$.res = $.num_resolutions;
 	}
 	/*
 	* Create our navigation window
@@ -150,14 +225,23 @@
     	// Create our navigation div and inject it inside our frame
     	var navwin = $('<div id="navwin"></div>').css("width",$.min_x).css("height",$.min_y).css("position","relative");
     	navcontainer.append(navwin);
-    	
+    	var src="";
     	// Create our navigation image and inject inside the div we just created
-    	var src = $.server + '?FIF=' + $.images[0].src + '&SDS=' + $.images[0].sds + '&CNT=1.0' +'&WID=' + $.min_x + '&QLT=99&CVT=jpeg';
+    	if($.fileFormat == "tiff")
+		  	var src = $.server + '?FIF=' + $.images[0].src + '&SDS=' + $.images[0].sds + '&CNT=1.0' +'&WID=' + $.min_x + '&QLT=99&CVT=jpeg';
+		  else
+		  	src =  $.server + $.images[0].src+"/TileGroup"+0+"/0-0-0.jpg";
+    	
     	var navimage = $('<img id="navigation"/>').attr("src",src);
     	navwin.append(navimage);
     	
     	// Create our navigation zone and inject inside the navigation div
-    	var zone = $('<div id="zone"></div>').css("width",$.min_x/2).css("height",$.min_y/2).css("opacity",0.4);
+		var zone;
+		if($.fileFormat == "tiff")
+    		zone = $('<div id="zone"></div>').css("width",$.min_x/2).css("height",$.min_y/2).css("opacity",0.4);
+		else
+			// TODO
+			zone = $('<div id="zone"></div>').css("width",$.min_x/2).css("height",$.min_y/2).css("opacity",0.4);
     	navwin.append(zone);
     	
     	// Create our progress bar
@@ -474,6 +558,8 @@
   
 	  var yoffset = Math.floor($.rgn_y % $.tileSize[1]);
 	  if( $.hei < $.rgn_h ) yoffset -= ($.rgn_h - $.hei)/2;
+	  
+	  //console.log("offset x %d and offset y %d",xoffset,yoffset);
   
 	  var tile;
 	  var i, j, k, n;
@@ -505,6 +591,8 @@
 		}
 	  }
 	  
+	  //console.log(map);
+	  
 	  $.nTilesLoaded = 0;
 	  $.nTilesToLoad = ntiles*$.images.length;
 
@@ -515,25 +603,31 @@
 		var j = map[m].y;
   
 		// Sequential index of the tile in the tif image
-		k = i + (j*xtiles);
+		// this variable needs to be changed for zoomify support
+		if($.fileFormat == "tiff")
+			k = i + (j*xtiles);
   
 		// Iterate over the number of layers we have
 		var n;
 		for(n=0;n<$.images.length;n++){
 		  $(this).log("Writing tile element");
-		  tile = $("<img />").attr("class",'layer'+n).css("left",(i-startx)*$.tileSize[0] - xoffset).css("top",(j-starty)*$.tileSize[1] - yoffset);
+		  if($.fileFormat == "tiff")
+		  	tile = $("<img />").attr("class",'layer'+n).css("left",(i-startx)*$.tileSize[0] - xoffset).css("top",(j-starty)*$.tileSize[1] - yoffset);
+		  else{
+			// TODO fix here
+			tile = $("<img />").attr("class",'layer'+n).css("left",(i-startx)*$.tileSize[0] - xoffset).css("top",(j-starty)*$.tileSize[1] - yoffset);
+		}
 		  tile.bind("load",function(){$.nTilesLoaded++;})
-		  /*,
-		'events': {
-		   load: function(){
-		   this.nTilesLoaded++;
-		   this.refreshLoadBar();
-		   }.bind(this),
-		   error: function(){ this.src=this.src; } // Try to reload if we have an error
-		}*/
   
 	  // We set the source at the end so that the 'load' function is properly fired
-		  var src = $.server+"?FIF="+$.images[n].src+"&cnt="+$.contrast+"&sds="+$.images[n].sds+"&jtl="+$.res+"," + k;
+		  var src = "";
+		  if($.fileFormat == "tiff")
+		  	src = $.server+"?FIF="+$.images[n].src+"&cnt="+$.contrast+"&sds="+$.images[n].sds+"&jtl="+$.res+"," + k;
+		  else{
+			var tileIndex = i + j * $.tierSizeInTiles[$.res-1].w + $.tileCountUpToTier[$.res-1]; 
+			var tileIndex = 0;
+		  	src = "http://localhost/~56k/mooviewer/moov-port-zoom/VF_0178/"+"TileGroup"+tileIndex+"/"+$.res+"-"+j+"-"+i+".jpg";
+			}
 		  tile.attr( 'src', src );
 		  $("#target").append(tile);
 		}
