@@ -26,7 +26,7 @@
     	else $.images = [{ src:options.image, sds:"0,90"} ];
     	
     	$.fileFormat = options.fileFormat;
-    	console.log($.fileFormat);
+    	//console.log($.fileFormat);
     	
     	$.credit = options.credit || null;
     	
@@ -37,6 +37,9 @@
     	
     	$.showNavButtons = true;
     	if( options.showNavButtons == false ) $.showNavButtons = false;
+    	
+    	$.showNavigation = true;
+    	if( options.showNavigation == false ) $.showNavigation = false;
     	
     	// If we want to assign a function for a click within the image
     	// - used for multispectral curve visualization, for example
@@ -221,29 +224,29 @@
     	// we'll worry later about how to change the @title into a proper tooltip
     	var toolbar = $('<div id="toolbar"></div>').css("width",$.min_x).attr("title",'* Drag to move. Double Click to show/hide navigation buttons');
     	navcontainer.append(toolbar);
-    	
-    	// Create our navigation div and inject it inside our frame
-    	var navwin = $('<div id="navwin"></div>').css("width",$.min_x).css("height",$.min_y).css("position","relative");
-    	navcontainer.append(navwin);
-    	var src="";
-    	// Create our navigation image and inject inside the div we just created
-    	if($.fileFormat == "tiff")
-		  	var src = $.server + '?FIF=' + $.images[0].src + '&SDS=' + $.images[0].sds + '&CNT=1.0' +'&WID=' + $.min_x + '&QLT=99&CVT=jpeg';
-		  else
-		  	src =  $.server + $.images[0].src+"/TileGroup"+0+"/0-0-0.jpg";
-    	
-    	var navimage = $('<img id="navigation"/>').attr("src",src);
-    	navwin.append(navimage);
-    	
-    	// Create our navigation zone and inject inside the navigation div
-		var zone;
-		if($.fileFormat == "tiff")
-    		zone = $('<div id="zone"></div>').css("width",$.min_x/2).css("height",$.min_y/2).css("opacity",0.4);
-		else
-			// TODO
-			zone = $('<div id="zone"></div>').css("width",$.min_x/2).css("height",$.min_y/2).css("opacity",0.4);
-    	navwin.append(zone);
-    	
+    	if($.showNavigation){
+			// Create our navigation div and inject it inside our frame
+			var navwin = $('<div id="navwin"></div>').css("width",$.min_x).css("height",$.min_y).css("position","relative");
+			navcontainer.append(navwin);
+			var src="";
+			// Create our navigation image and inject inside the div we just created
+			if($.fileFormat == "tiff")
+				var src = $.server + '?FIF=' + $.images[0].src + '&SDS=' + $.images[0].sds + '&CNT=1.0' +'&WID=' + $.min_x + '&QLT=99&CVT=jpeg';
+			  else
+				src =  $.server + $.images[0].src+"/TileGroup"+0+"/0-0-0.jpg";
+			
+			var navimage = $('<img id="navigation"/>').attr("src",src);
+			navwin.append(navimage);
+			
+			// Create our navigation zone and inject inside the navigation div
+			var zone;
+			if($.fileFormat == "tiff")
+				zone = $('<div id="zone"></div>').css("width",$.min_x/2).css("height",$.min_y/2).css("opacity",0.4);
+			else
+				// TODO
+				zone = $('<div id="zone"></div>').css("width",$.min_x/2).css("height",$.min_y/2).css("opacity",0.4);
+			navwin.append(zone);
+    	}
     	// Create our progress bar
     	var loadBarContainer = $('<div id="loadBarContainer"></div>').css("width",$.min_x-2).css("height",10).append($('<div id="loadBar"></div>'));
     	
@@ -282,10 +285,10 @@
 			$(this).scrollTo(-$.rgn_w/3,0); 
 		});
 		$('#shiftUp').bind( 'click', function(){
-			$(this).scrollTo(-$.rgn_h/3,0); 
+			$(this).scrollTo(0,-$.rgn_h/3); 
 		});
 		$('#shiftDown').bind( 'click', function(){
-			$(this).scrollTo($.rgn_h/3,0); 
+			$(this).scrollTo(0,$.rgn_h/3); 
 		});
 		$('#shiftRight').bind( 'click', function(){
 			$(this).scrollTo($.rgn_w/3,0); 
@@ -319,12 +322,13 @@
     }
     
     $.fn.scrollTo = function(dx,dy){
-   		$(this).log("called scroll navigation "+dx+" "+dy);
+   		//console.log("called scroll navigation "+dx+" "+dy);
    		if( dx || dy ){
 		  // To avoid unnecessary redrawing ...
 		  if( (Math.abs(dx) < 3) && (Math.abs(dy) < 3) ) return;
 		  $(this).checkBounds(dx,dy);
 		  $(this).requestImages();
+		  if($.showNavigation)
 		  $(this).positionZone();
 		}
     }
@@ -357,8 +361,10 @@
 		   if( $.rgn_y < 0 ) $.rgn_y = 0;
 	 
 		   $(this).requestImages();
-		   $(this).positionZone();
-		   if( $.scale ) $(this).setScale();
+		   if($.showNavigation){
+		   	$(this).positionZone();
+		   	if( $.scale ) $(this).setScale();
+		   }
 	 
 		 }
     }
@@ -374,6 +380,7 @@
 	
 		$.rgn_x = x;
 		$.rgn_y = y;
+		//console.log("check bounds %i %i",$.rgn_x,$.rgn_y);
     }
 	
 	$.fn.zoomOut = function(){
@@ -511,15 +518,15 @@
 		else $.xfit = 1;
 		if( height < $.min_y ) $.yfit = 0;
 		else $.yfit = 1;
-		
-		var border = $('#zone')[0].offsetHeight - $('#zone')[0].clientHeight;
-		// #zone.#navwin CSS position attribute needs to be absolute
-		$("#zone").animate({
-							"left":pleft,
-							"top":ptop,
-							"width": width - border/2,
-							"height": height - border/2
-							}, 500);
+		if($.showNavigation){
+			var border = $('#zone')[0].offsetHeight - $('#zone')[0].clientHeight;
+			$("#zone").animate({
+								"left":pleft,
+								"top":ptop,
+								"width": width - border/2,
+								"height": height - border/2
+								}, 500);
+		}
 	}
 	
 	/* 
@@ -560,6 +567,7 @@
 	  if( $.hei < $.rgn_h ) yoffset -= ($.rgn_h - $.hei)/2;
 	  
 	  //console.log("offset x %d and offset y %d",xoffset,yoffset);
+	  //console.log("xtiles %d and ytiles %d",xtiles,ytiles);
   
 	  var tile;
 	  var i, j, k, n;
@@ -616,7 +624,7 @@
 		  else{
 			// TODO fix here
 			tile = $("<img />").attr("class",'layer'+n).css("left",(i-startx)*$.tileSize[0] - xoffset).css("top",(j-starty)*$.tileSize[1] - yoffset);
-		}
+			}
 		  tile.bind("load",function(){$.nTilesLoaded++;})
   
 	  // We set the source at the end so that the 'load' function is properly fired
@@ -626,7 +634,7 @@
 		  else{
 			var tileIndex = i + j * $.tierSizeInTiles[$.res-1].w + $.tileCountUpToTier[$.res-1]; 
 			var tileIndex = 0;
-		  	src = "http://localhost/~56k/mooviewer/moov-port-zoom/VF_0178/"+"TileGroup"+tileIndex+"/"+$.res+"-"+j+"-"+i+".jpg";
+		  	src = "http://localhost/~56k/mooviewer/moov-port-zoom/VF_0178/"+"TileGroup"+tileIndex+"/"+$.res+"-"+i+"-"+j+".jpg";
 			}
 		  tile.attr( 'src', src );
 		  $("#target").append(tile);
