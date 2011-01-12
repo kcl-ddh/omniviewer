@@ -64,7 +64,7 @@
 		$.navpos = [0,0];
 		$.tileSize = [0,0];
 		$.num_resolutions = 0;
-		$.res;
+		$.res = 0;
 		$.standardTileSize = 256;
 		$.refresher = null;
 		// if zoomify
@@ -76,7 +76,15 @@
 		// Number of tiles loaded
 		$.nTilesLoaded = 0;
 		$.nTilesToLoad = 0;
-		$(this).log_info('plugin IIP initialised');
+		// start djatoka add
+		this.max_zoom = 7;
+		this.top_left_x = 0;
+		this.top_left_y = 0;
+		this.svc_val_fmt = "info:ofi/fmt:kev:mtx:jpeg2000";
+		this.svc_id = "info:lanl-repo/svc/getRegion";
+		this.openUrl = "";
+		// end djatoka add
+		$(this).log_info('plugin initialised');
 		$(this).load();
 		}
 
@@ -122,7 +130,7 @@
 	* Calls the IIPImage server
 	*/
 	$.fn.load = function(){
-		if($.fileFormat == "tiff"){
+		if($.fileFormat == "iip"){
 			var query_string = "&obj=IIP,1.0&obj=Max-size&obj=Tile-size&obj=Resolution-number";
 			// issue the ajax query
 			$.ajax({
@@ -238,7 +246,7 @@
 			navcontainer.append(navwin);
 			var src="";
 			// Create our navigation image and inject inside the div we just created
-			if($.fileFormat == "tiff")
+			if($.fileFormat == "iip")
 				var src = $.server + '?FIF=' + $.images[0].src + '&SDS=' + $.images[0].sds + '&CNT=1.0' +'&WID=' + $.min_x + '&QLT=99&CVT=jpeg';
 			  else
 				src =  $.server + $.images[0].src+"/TileGroup"+0+"/0-0-0.jpg";
@@ -248,7 +256,7 @@
 			
 			// Create our navigation zone and inject inside the navigation div
 			var zone;
-			if($.fileFormat == "tiff")
+			if($.fileFormat == "iip")
 				zone = $('<div id="zone"></div>').css("width",$.min_x/2).css("height",$.min_y/2).css("opacity",0.4);
 			else
 				// TODO
@@ -612,8 +620,18 @@
 	  
 	  $.nTilesLoaded = 0;
 	  $.nTilesToLoad = ntiles*$.images.length;
+	  
+	  if($.fileFormat == "iip")
+	  		map.sort(function s(a,b){return a.n - b.n;});
+	  else if($.fileFormat == "djatoka"){
+			 // djatoka mods 
+			 map.sort(function (a,b){return a > b;});
+			 var first = true;
+			 var r = $.num_resolutions - $.res;
+			 var f = $(this).getMultiplier(r, $.tileSize[0]);
+			 // end djatoka mods
 
-	  map.sort(function s(a,b){return a.n - b.n;});
+	  }
 	  
 	  for( var m=0; m<ntiles; m++ ){
 		var i = map[m].x;
@@ -621,36 +639,82 @@
   
 		// Sequential index of the tile in the tif image
 		// this variable needs to be changed for zoomify support
-		if($.fileFormat == "tiff")
+		if($.fileFormat == "iip")
 			k = i + (j*xtiles);
+		else if($.fileFormat == "djatoka"){
+			// djatoka mods 
+			var djatoka_x = i * f;
+			var djatoka_y = j * f;
+			if (first) {
+				  top_left_x = (djatoka_x + $(this).getMultiplier(r, xoffset-2));
+				  top_left_y = (djatoka_y + $(this).getMultiplier(r, yoffset-2));
+				  if (top_left_x < 0)
+						top_left_x = 0;
+				  if (top_left_y < 0)
+						top_left_y = 0;
+				  $(this).setOpenURL();
+				  first = false;
+			}
+			// end djatoka mods
+
+	  }
   
 		// Iterate over the number of layers we have
 		var n;
-		for(n=0;n<$.images.length;n++){
-		  $(this).log("Writing tile element");
-		  if($.fileFormat == "tiff")
-		  	tile = $("<img />").attr("class",'layer'+n).css("left",(i-startx)*$.tileSize[0] - xoffset).css("top",(j-starty)*$.tileSize[1] - yoffset);
-		  else{
-			// TODO fix here
-			tile = $("<img />").attr("class",'layer'+n).css("left",(i-startx)*$.tileSize[0] - xoffset).css("top",(j-starty)*$.tileSize[1] - yoffset);
-			}
-		  tile.bind("load",function(){$.nTilesLoaded++;})
-  
-	  // We set the source at the end so that the 'load' function is properly fired
-		  var src = "";
-		  if($.fileFormat == "tiff")
-		  	src = $.server+"?FIF="+$.images[n].src+"&cnt="+$.contrast+"&sds="+$.images[n].sds+"&jtl="+$.res+"," + k;
-		  else{
-			var tileIndex = i + j * $.tierSizeInTiles[$.res][0] + $.tileCountUpToTier[$.res];
-			tileIndex=parseInt(tileIndex/256);
-			
-			
-		  	src = "http://localhost/~56k/mooviewer/moov-port-zoom/VF_0178/"+"TileGroup"+tileIndex+"/"+$.res+"-"+i+"-"+j+".jpg";
-			}
-		  tile.attr( 'src', src );
-		  $("#target").append(tile);
-		}
-		
+		if($.fileFormat == "iip"){
+			 for(n=0;n<$.images.length;n++){
+			   $(this).log("Writing tile element");
+			   if($.fileFormat == "iip")
+				 tile = $("<img />").attr("class",'layer'+n).css("left",(i-startx)*$.tileSize[0] - xoffset).css("top",(j-starty)*$.tileSize[1] - yoffset);
+			   else{
+				 // TODO fix here
+				 tile = $("<img />").attr("class",'layer'+n).css("left",(i-startx)*$.tileSize[0] - xoffset).css("top",(j-starty)*$.tileSize[1] - yoffset);
+				 }
+			   tile.bind("load",function(){$.nTilesLoaded++;})
+			   tile.bind("error",function(){return;)
+	   
+		   // We set the source at the end so that the 'load' function is properly fired
+			   var src = "";
+			   if($.fileFormat == "iip")
+				 src = $.server+"?FIF="+$.images[n].src+"&cnt="+$.contrast+"&sds="+$.images[n].sds+"&jtl="+$.res+"," + k;
+			   else{
+				 var tileIndex = i + j * $.tierSizeInTiles[$.res][0] + $.tileCountUpToTier[$.res];
+				 tileIndex=parseInt(tileIndex/256);
+				 
+				 
+				 src = "http://localhost/~56k/mooviewer/moov-port-zoom/VF_0178/"+"TileGroup"+tileIndex+"/"+$.res+"-"+i+"-"+j+".jpg";
+				 }
+			   tile.attr( 'src', src );
+			   $("#target").append(tile);
+			 }
+			 
+		   }
+	  }
+	  else if($.fileFormat == "djatoka"){
+		   if (djatoka_x < $.max_width && djatoka_y < $.max_height) {
+			for(n=0;n<$.images.length;n++){
+	  
+			 tile = $("<img />").attr("class",'layer'+n).css("left",(i-startx)*$.tileSize[0] - xoffset).css("top",(j-starty)*$.tileSize[1] - yoffset);
+	  		 tile.bind("load",function(){$.nTilesLoaded++;})
+			 tile.bind("error",function(){return;)
+			 
+			 // djatoka mods
+			 var src = $.server + "?url_ver=Z39.88-2004&rft_id="
+					 + $.images[n].src + "&svc_id=" + this.svc_id
+					 + "&svc_val_fmt=" + this.svc_val_fmt
+					 + "&svc.format=image/jpeg&svc.level="
+					 + $.res + "&svc.rotate=0&svc.region="
+					 + djatoka_y + "," + djatoka_x + ",256,256";
+			 // end djatoka mods
+			 
+			 // We set the source at the end so that the 'load' function is properly fired
+			 //var src = this.server+"?FIF="+this.images[n].src+"&cnt="+this.contrast+"&sds="+this.images[n].sds+"&jtl="+this.res+"," + k;
+			 tile.attr( 'src', src );
+			 $("#target").append(tile);
+		   }
+		  } else 
+			  this.nTilesLoaded++
+		 }
 	  }
   		/*
 	  if($.images.length > 1 ){
