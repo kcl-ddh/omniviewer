@@ -661,7 +661,7 @@
   
 		// Iterate over the number of layers we have
 		var n;
-		if($.fileFormat == "iip"){
+		if($.fileFormat == "iip"||$.fileFormat == "zoomify"){
 			 for(n=0;n<$.images.length;n++){
 			   $(this).log("Writing tile element");
 			   if($.fileFormat == "iip")
@@ -670,8 +670,8 @@
 				 // TODO fix here
 				 tile = $("<img />").attr("class",'layer'+n).css("left",(i-startx)*$.tileSize[0] - xoffset).css("top",(j-starty)*$.tileSize[1] - yoffset);
 				 }
-			   tile.bind("load",function(){$.nTilesLoaded++;})
-			   tile.bind("error",function(){return;)
+			   tile.bind("load",function(){$.nTilesLoaded++;})			
+			   tile.bind("error",function(){return;})
 	   
 		   // We set the source at the end so that the 'load' function is properly fired
 			   var src = "";
@@ -682,21 +682,20 @@
 				 tileIndex=parseInt(tileIndex/256);
 				 
 				 
-				 src = "http://localhost/~56k/mooviewer/moov-port-zoom/VF_0178/"+"TileGroup"+tileIndex+"/"+$.res+"-"+i+"-"+j+".jpg";
+				 src = $.server+"/"+$.images[n].src +"/"+"TileGroup"+tileIndex+"/"+$.res+"-"+i+"-"+j+".jpg";
 				 }
 			   tile.attr( 'src', src );
 			   $("#target").append(tile);
 			 }
 			 
 		   }
-	  }
 	  else if($.fileFormat == "djatoka"){
 		   if (djatoka_x < $.max_width && djatoka_y < $.max_height) {
 			for(n=0;n<$.images.length;n++){
 	  
 			 tile = $("<img />").attr("class",'layer'+n).css("left",(i-startx)*$.tileSize[0] - xoffset).css("top",(j-starty)*$.tileSize[1] - yoffset);
 	  		 tile.bind("load",function(){$.nTilesLoaded++;})
-			 tile.bind("error",function(){return;)
+			 tile.bind("error",function(){})
 			 
 			 // djatoka mods
 			 var src = $.server + "?url_ver=Z39.88-2004&rft_id="
