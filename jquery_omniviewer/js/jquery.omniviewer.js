@@ -3,6 +3,8 @@
 */
 
 // the object embedding the plugin
+
+
 (function($){
 	$.source = null;
 	$.server = null;
@@ -84,7 +86,7 @@
 		this.svc_id = "info:lanl-repo/svc/getRegion";
 		this.openUrl = "";
 		// end djatoka add
-		$(this).log_info('plugin initialised');
+		console.info('plugin initialised');
 		$(this).load();
 		}
 
@@ -137,7 +139,7 @@
 			 url: $.server + "?" +"FIF=" + $.images[0].src + query_string,
 			 success: function(data){
 				var response = data || alert( "No response from server " + $.server );
-				$(this).log_info(response);
+				console.info(response);
 				var tmp = response.split( "Max-size" );
 				if(!tmp[1]) alert( "Unexpected response from server " + $.server );
 				var size = tmp[1].split(" ");
@@ -234,7 +236,7 @@
 	* Create our navigation window
     */
     $.fn.createNavigationWindow = function(){
-    	$(this).log("called createNavigationWindow()");
+    	console.log("called createNavigationWindow()");
     	
     	var navcontainer = $('<div id="navcontainer"></div>').css("width",$.min_x).css("height",10);
     	// we'll worry later about how to change the @title into a proper tooltip
@@ -314,7 +316,7 @@
     }
     
     $.fn.scrollNavigation = function(ev,ui){
-   		$(this).log("called scroll navigation");
+   		console.log("called scroll navigation");
    		var xmove = 0;
 		var ymove = 0;
 	
@@ -401,7 +403,7 @@
     }
 	
 	$.fn.zoomOut = function(){
-   		$(this).log("called zoom out");
+   		console.log("called zoom out");
    		if( ($.wid > $.rgn_w) || ($.hei > $.rgn_h) ){
 		  $.res--;
 		  $.wid = $.max_width;
@@ -440,7 +442,7 @@
     }
 	
 	$.fn.createWindows = function(){
-		$(this).log_info("createWindows called");
+		console.info("createWindows called");
 		var winWidth = $($.source).width();
 		var winHeight = $($.source).height();
 		
@@ -462,7 +464,7 @@
 								});
 		$("#target" ).bind("drag",function(event,ui) {
   							//event.preventDefault();
-  							$(this).log(ui.position);
+  							console.log(ui.position);
   							var top = ui.position.top;
   							var left = ui.position.left;
   							var out;
@@ -515,7 +517,7 @@
 	/* 
    	*/
 	$.fn.positionZone = function(){
-   		$(this).log("called positionZone");
+   		console.log("called positionZone");
    		
    		var pleft = ($.rgn_x/$.wid) * ($.min_x);
 		if( pleft > $.min_x ) pleft = $.min_x;
@@ -549,7 +551,7 @@
 	/* 
    	*/
 	$.fn.loadGrid = function(){
-   		$(this).log("rgn_x",$.rgn_x);
+   		console.log("rgn_x",$.rgn_x);
    		
    		 //var pos = $($.source).getPosition();
 
@@ -663,7 +665,7 @@
 		var n;
 		if($.fileFormat == "iip"||$.fileFormat == "zoomify"){
 			 for(n=0;n<$.images.length;n++){
-			   $(this).log("Writing tile element");
+			   console.log("Writing tile element");
 			   if($.fileFormat == "iip")
 				 tile = $("<img />").attr("class",'layer'+n).css("left",(i-startx)*$.tileSize[0] - xoffset).css("top",(j-starty)*$.tileSize[1] - yoffset);
 			   else{
@@ -743,12 +745,12 @@
 	$.fn.reCenter = function(){
 		$.rgn_x = ($.wid-$.rgn_w)/2;
    		$.rgn_y = ($.hei-$.rgn_h)/2;
-   		$(this).log("called reCenter "+$.rgn_x +" "+ $.rgn_y);
+   		console.log("called reCenter %d %d",$.rgn_x,$.rgn_y);
 	}
 	
 	$.fn.log = function(msg){
 		if($.debug){
-			$(this).log(msg);
+			console.log(msg);
 		}
 		return;
 	}
@@ -783,3 +785,44 @@
     	});
  	};
 })(jQuery);
+
+(function() {
+	var f = function() {};
+	var c = {
+		info: f,
+		log: f,
+		assert: f,
+		warn: f,
+		error: f,
+		dir: f,
+		group: f,
+		groupEnd: f
+	};
+
+	if(!window.console)
+		window.console = c;
+})();
+
+(function() {
+  var proxied = console.log;
+  console.log = function() {
+	if($.debug)
+    return proxied.apply(this, arguments);
+  };
+})();
+
+(function() {
+  var proxied = console.info;
+  console.info = function() {
+	if($.debug)
+    return proxied.apply(this, arguments);
+  };
+})();
+
+(function() {
+  var proxied = console.debug;
+  console.debug = function() {
+	if($.debug)
+    return proxied.apply(this, arguments);
+  };
+})();
