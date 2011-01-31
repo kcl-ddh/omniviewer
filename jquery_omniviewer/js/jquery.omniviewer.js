@@ -336,8 +336,35 @@
 			$(this).scrollTo($.rgn_w/3,0); 
 		});
 		
+		$('#navigation').bind('mousewheel', $(this).zoom);
+		
+		$('#zone').bind('mousewheel', $(this).zoom);
+		
 		// TODO for the time being I leave behind minor events bound to mousewheel and #zone.click
     }
+
+	$.fn.refreshLoadBar=function() {
+
+	    // Update the loaded tiles number, grow the loadbar size
+	    var w = ($.nTilesLoaded / $.nTilesToLoad) * $.min_x;
+	    $('#loadBar').css( 'width', w );
+
+	    // Display the % in the progress bar
+	    $('#loadBar').html('loading&nbsp;:&nbsp;'+Math.round($.nTilesLoaded/$.nTilesToLoad*100) + '%' );
+		
+		$('#loadBarContainer').fadeIn();
+	    if( $('#loadBarContainer').css( 'opacity') != 0.85 ){
+	      $('#loadBarContainer').css( 'opacity', 0.85 );
+	    }
+
+	    // If we're done with loading, fade out the load bar
+	    if( $.nTilesLoaded == $.nTilesToLoad ){
+	      // Fade out our progress bar and loading animation in a chain
+	      $('#target').css( 'cursor', 'move' );
+	      $('#loadBarContainer').fadeOut();
+	    }
+
+	  }
     
     $.fn.scrollNavigation = function(ev,ui){
    		console.log("called scroll navigation");
@@ -374,6 +401,13 @@
 		  $(this).positionZone();
 		}
     }
+
+	$.fn.zoom=function(event, delta, deltaX, deltaY){
+		if(delta>0)
+			$(this).zoomIn();
+		else
+			$(this).zoomOut();
+	}
     
     $.fn.zoomIn = function(){
    		if( ($.wid <= ($.max_width/2)) && ($.hei <= ($.max_height/2)) ){
@@ -533,7 +567,9 @@
 							   out = true;
 							 }
 						}
+						
   					);
+		$('#target').bind('mousewheel', $(this).zoom);
 		$.rgn_w = winWidth;
     	$.rgn_h = winHeight;
     	
@@ -705,7 +741,7 @@
 				 // TODO fix here
 				 tile = $("<img />").attr("class",'layer'+n).css("left",(i-startx)*$.tileSize[0] - xoffset).css("top",(j-starty)*$.tileSize[1] - yoffset);
 				 }
-			   tile.bind("load",function(){$.nTilesLoaded++;})			
+			   tile.bind("load",function(){$.nTilesLoaded++;$(this).refreshLoadBar();})			
 			   tile.bind("error",function(){return;})
 	   
 		   // We set the source at the end so that the 'load' function is properly fired
@@ -729,7 +765,7 @@
 			for(n=0;n<$.images.length;n++){
 	  
 			 tile = $("<img />").attr("class",'layer'+n).css("left",(i-startx)*$.tileSize[0] - xoffset).css("top",(j-starty)*$.tileSize[1] - yoffset);
-	  		 tile.bind("load",function(){$.nTilesLoaded++;})
+	  		 tile.bind("load",function(){$.nTilesLoaded++;$(this).refreshLoadBar();})	
 			 tile.bind("error",function(){})
 			 
 			 // djatoka mods

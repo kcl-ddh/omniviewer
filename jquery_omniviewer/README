@@ -7,3 +7,5 @@ jQuery OmniViewer is a port of the SourceForge.net IIPImage project (IIPMooViewe
 The Zoomify support is somehow based on OpenLayers code.
 
 The Djatoka support is a jQuery port of the Djatoka viewer's code (which in turn is based on the IIPMooViewer).
+
+Dependency: Mousewheel plugin <https://github.com/brandonaaron/jquery-mousewheel/> by Brandon Aaron
