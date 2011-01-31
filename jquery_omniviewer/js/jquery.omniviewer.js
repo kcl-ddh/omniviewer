@@ -79,12 +79,12 @@
 		$.nTilesLoaded = 0;
 		$.nTilesToLoad = 0;
 		// start djatoka add
-		this.max_zoom = 7;
-		this.top_left_x = 0;
-		this.top_left_y = 0;
-		this.svc_val_fmt = "info:ofi/fmt:kev:mtx:jpeg2000";
-		this.svc_id = "info:lanl-repo/svc/getRegion";
-		this.openUrl = "";
+		$.max_zoom = 7;
+		$.top_left_x = 0;
+		$.top_left_y = 0;
+		$.svc_val_fmt = "info:ofi/fmt:kev:mtx:jpeg2000";
+		$.svc_id = "info:lanl-repo/svc/getRegion";
+		$.openUrl = "";
 		// end djatoka add
 		console.info('plugin initialised');
 		$(this).load();
@@ -160,7 +160,7 @@
 			 },
 			});
 		}
-		else{
+		else if($.fileFormat == "zoomify"){
 			var query_string = "ImageProperties.xml";
 			$.ajax({
 			 url: $.server + "/"+$.images[0].src + "/"+ query_string,
@@ -177,6 +177,25 @@
 				});
 				var response = data || alert( "No response from server " + $.server );
 				$(this).initialiseZoomify();
+				$(this).createWindows();
+			 },
+			 error:function(){
+				$(this).log_error("Unable to get image and tile sizes from server!");
+			 },
+			});
+		}
+		else if($.fileFormat == "djatoka"){
+			// MODIFY
+			$.ajax({
+			 url: $.server + "?"+"url_ver=Z39.88-2004&rft_id=" + $.images[0].src + "&svc_id=info:lanl-repo/svc/getMetadata",
+			 success: function(data){
+				var resp = data || alert("No response from server " + this.server);
+				$.max_width = parseInt(resp.width);
+	            $.max_height = parseInt(resp.height);
+	            $.tileSize[0] = 256;
+		        $.tileSize[1] = 256;
+	            $.num_resolutions = parseInt(resp.levels);
+	            $.res = $.num_resolutions;
 				$(this).createWindows();
 			 },
 			 error:function(){
@@ -250,8 +269,13 @@
 			// Create our navigation image and inject inside the div we just created
 			if($.fileFormat == "iip")
 				var src = $.server + '?FIF=' + $.images[0].src + '&SDS=' + $.images[0].sds + '&CNT=1.0' +'&WID=' + $.min_x + '&QLT=99&CVT=jpeg';
-			  else
+			 else if($.fileFormat == "zoomify")
 				src =  $.server + $.images[0].src+"/TileGroup"+0+"/0-0-0.jpg";
+			else if($.fileFormat == "djatoka")
+				src =  $.server +  "?url_ver=Z39.88-2004&rft_id="
+				            + $.images[0].src + "&svc_id=" + $.svc_id
+				            + "&svc_val_fmt=" + $.svc_val_fmt
+				            + "&svc.format=image/jpeg&svc.scale=" + $.min_x + "," + $.min_y;
 			
 			var navimage = $('<img id="navigation"/>').attr("src",src);
 			navwin.append(navimage);
@@ -352,12 +376,17 @@
     }
     
     $.fn.zoomIn = function(){
-   		//console.log("called zoom in");
    		if( ($.wid <= ($.max_width/2)) && ($.hei <= ($.max_height/2)) ){
 		   $.res++;
 		   $.wid = $.max_width;
 		   $.hei = $.max_height;
-		   for( var i=$.res; i<$.num_resolutions-1; i++ ){
+			if($.fileFormat == "djatoka"){
+		  		var iter = $.num_resolutions;
+			}
+			else{
+				var iter = $.num_resolutions-1;
+			}
+		   for( var i=$.res; i<iter; i++ ){
 		 $.wid = Math.floor($.wid/2);
 		 $.hei = Math.floor($.hei/2);
 		   }
@@ -391,15 +420,13 @@
     $.fn.checkBounds = function(dx,dy){
    		var x = $.rgn_x + dx;
 		var y = $.rgn_y + dy;
-	
 		if( x > $.wid - $.rgn_w ) x = $.wid - $.rgn_w;
 		if( y > $.hei - $.rgn_h ) y = $.hei - $.rgn_h;
 		if( x < 0 ) x = 0;
 		if( y < 0 ) y = 0;
-	
 		$.rgn_x = x;
 		$.rgn_y = y;
-		//console.log("check bounds %i %i",$.rgn_x,$.rgn_y);
+		console.log("check bounds %i %i",$.rgn_x,$.rgn_y);
     }
 	
 	$.fn.zoomOut = function(){
@@ -408,7 +435,13 @@
 		  $.res--;
 		  $.wid = $.max_width;
 		  $.hei = $.max_height;
-		  for( var i=$.res; i<$.num_resolutions-1; i++ ){
+			if($.fileFormat == "djatoka"){
+		  		var iter = $.num_resolutions;
+			}
+			else{
+				var iter = $.num_resolutions-1;
+			}
+		  for( var i=$.res; i<iter; i++ ){
 		$.wid = Math.floor($.wid/2);
 		$.hei = Math.floor($.hei/2);
 		  }
@@ -701,8 +734,8 @@
 			 
 			 // djatoka mods
 			 var src = $.server + "?url_ver=Z39.88-2004&rft_id="
-					 + $.images[n].src + "&svc_id=" + this.svc_id
-					 + "&svc_val_fmt=" + this.svc_val_fmt
+					 + $.images[n].src + "&svc_id=" + $.svc_id
+					 + "&svc_val_fmt=" + $.svc_val_fmt
 					 + "&svc.format=image/jpeg&svc.level="
 					 + $.res + "&svc.rotate=0&svc.region="
 					 + djatoka_y + "," + djatoka_x + ",256,256";
@@ -714,7 +747,7 @@
 			 $("#target").append(tile);
 		   }
 		  } else 
-			  this.nTilesLoaded++
+			  $.nTilesLoaded++;
 		 }
 	  }
   		/*
@@ -730,14 +763,34 @@
    	*/
 	$.fn.requestImages = function(){
    		// bypassed the refresher for the time being
-	
 		// Set our cursor
 		$('#target').css( 'cursor', 'wait' );
-	
 		// Load our image mosaic
 		$(this).loadGrid();
-	
 		// bypassed the refresher for the time being
+	}
+	
+	$.fn.getMultiplier = function(r, f) {
+	    var m = f;
+	    for (i = 0; i < r; i++) {
+	        m = m * 2;
+	    }
+	    return m;
+	}
+	
+	$.fn.setOpenURL=function() {
+	    var w = $.rgn_w;
+	    if ($.wid < $.rgn_w)
+	        w = $.wid;
+	    var h = $.rgn_h;
+	    if ($.hei < $.rgn_h)
+	    h = $.hei;
+	    $.openUrl = $.server + "?url_ver=Z39.88-2004&rft_id="
+	        + $.images[0].src + "&svc_id=" + $.svc_id + "&svc_val_fmt="
+	        + $.svc_val_fmt
+	        + "&svc.format=image/jpeg&svc.level=" + $.res
+	        + "&svc.rotate=0&svc.region=" + top_left_y + ","
+	        + top_left_x + "," + h + "," + w;
 	}
 	
 	/* Recenter the image view

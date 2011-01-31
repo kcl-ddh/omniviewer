@@ -20,12 +20,12 @@
 
   <script type="text/javascript">
 
-    var server = 'http://localhost:8080/adore-djatoka/resolver';
+    var server = 'http://137.73.122.221:8080/adore-djatoka/resolver';
 
     // The *full* image path on the server. This path does *not* need to be in the web
     // server root directory. On Windows, use Unix style forward slash paths without
     // the "c:" prefix
-    var images = ['http://memory.loc.gov/gmd/gmd433/g4330/g4330/np000066.jp2'];
+    var images = ['http://localhost/~56k/jqow/ow_djat_flav/demo.jp2'];
 	//var images = '/Users/56k/phd/code/mooviewer-port/moov-demo/cch_image.tif';
     // Copyright or information message
     var credit = '&copy; CCH';
@@ -38,8 +38,8 @@
 				,zoom: 1
 				,render: 'random'
                 ,showNavButtons: true
-                ,debug : false
-                ,fileFormat: "iip"
+                ,debug : true
+                ,fileFormat: "djatoka"
 				,mode : null
 			});
 		});	 
