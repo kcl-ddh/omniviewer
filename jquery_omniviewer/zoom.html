@@ -9,8 +9,8 @@
   <meta name="description" content="IIPImage: High Resolution Remote Image Streaming Viewing"/>
   <meta name="copyright" content="&copy; 2003-2008 Ruven Pillay"/>
 
-  <link rel="stylesheet" type="text/css" media="all" href="css/iip.compressed.css" />
-<link rel="stylesheet" type="text/css" media="all" href="css/cch.css" />
+  <!--<link rel="stylesheet" type="text/css" media="all" href="css/iip.css" />-->
+<link rel="stylesheet" type="text/css" media="all" href="css/omniviewer.css" />
   <link rel="shortcut icon" href="images/iip-favicon.png" />
   <title>jQuery OmniViewer 1.0-alpha [pre-zoomified image]</title>
 
@@ -20,20 +20,13 @@
   <script type="text/javascript" src="ext-plugin/jquery.mousewheel.js"></script>
   <script type="text/javascript">
 
-    // The iipsrv server path (/fcgi-bin/iipsrv.fcgi by default)
+
     var server = 'http://www.mr56k.info/ow/ow_zoom_flav';
-    //var server = 'http://images.cch.kcl.ac.uk/diamm/liv/images';
-    // The *full* image path on the server. This path does *not* need to be in the web
-    // server root directory. On Windows, use Unix style forward slash paths without
-    // the "c:" prefix
-    //var images = ['VF_0178'];
     var images = ['GB-CA_Add.128_8_r'];
-    //var images = '/Users/56k/phd/code/mooviewer-port/moov-demo/cch_image.tif';
-    // Copyright or information message
     var credit = '&copy; CCH';
 		
 		$(document).ready(function() {
-			$("#targetframe").OmniViewer({
+			$("#ow_1").OmniViewer({
 				image: images
 				,server: server
 				,credit: credit
@@ -52,9 +45,12 @@
  </head>
 
  <body>
-   <div style="width:99%;height:99%;margin-left:auto;margin-right:auto" id="targetframe">
+ 	<a href="">Previous page in source</a> <a href="">Next page in source</a>
+   <div style="width:99%;height:99%;margin-left:auto;margin-right:auto" id="ow_1">
 	
    </div>
+
+   
  </body>
 
 </html>

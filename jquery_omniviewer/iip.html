@@ -9,8 +9,8 @@
   <meta name="description" content="IIPImage: High Resolution Remote Image Streaming Viewing"/>
   <meta name="copyright" content="&copy; 2003-2008 Ruven Pillay"/>
 
-  <link rel="stylesheet" type="text/css" media="all" href="css/iip.compressed.css" />
-<link rel="stylesheet" type="text/css" media="all" href="css/cch.css" />
+    <!--<link rel="stylesheet" type="text/css" media="all" href="css/iip.css" />-->
+<link rel="stylesheet" type="text/css" media="all" href="css/omniviewer.css" />
   <link rel="shortcut icon" href="images/iip-favicon.png" />
   <title>jQuery OmniViewer 1.0-alpha [IIP image server]</title>
 
@@ -31,19 +31,25 @@
 	//var images = '/Users/56k/phd/code/mooviewer-port/moov-demo/cch_image.tif';
     // Copyright or information message
     var credit = '&copy; CCH';
-		
+    
+    var viewer = null;
+	var aviewer = null;
 		$(document).ready(function() {
-			$("#targetframe").OmniViewer({
+			viewer = $("#ow1").OmniViewer({
 				image: images
 				,server: server
 				,credit: credit
 				,zoom: 1
-				,render: 'random'
+				,render: "random"
                 ,showNavButtons: true
+                ,showNavigation: true
                 ,debug : true
                 ,fileFormat: "iip"
-				,mode : null
+				,mode : "embedded"
 			});
+			$("#ow1").css("position","relative").css("width","300px").css("height","500px");	
+			
+			
 		});	  
 	
   </script>
@@ -51,9 +57,43 @@
  </head>
 
  <body>
-   <div style="width:99%;height:99%;margin-left:auto;margin-right:auto" id="targetframe">
+ <div><a href="">Previous page in source</a> <a href="">Next page in source</a></div>
+ 
+ <table border="1">
+<tr>
+<td><div id="ow1">
 	
-   </div>
+   </div></td>
+<td>
+   <!--<iframe width="300px" height="500px" src="http://137.73.122.221/~56k/jqow/ow_iip_flav/"></iframe>-->
+
+</td>
+</tr>
+</table>
+   
+   
+	<h4>© 2001 Canterbury Cathedral Archives, by kind permission of the Dean and Chapter of Canterbury</h4>
+	
+	<h3>Public Comments</h3>
+	<dl>
+		<dt></dt>
+		<dd></dd>
+	</dl>
+	
+	<h3>Private Note</h3>
+	
+	<dl>
+		<dt></dt>
+		<dd></dd>
+	</dl>
+	
+	
+	<h3>Transcriptions</h3>
+	<dl>
+		<dt></dt>
+		<dd></dd>
+	</dl>
+
  </body>
 
 </html>

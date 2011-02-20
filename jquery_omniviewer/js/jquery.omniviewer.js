@@ -3,8 +3,6 @@
 */
 
 // the object embedding the plugin
-
-
 (function($){
 	$.source = null;
 	$.server = null;
@@ -14,7 +12,7 @@
 		$.debug = options.debug;
 		$.source = "#";
 		$.source += this.attr("id") ||  alert( 'No element ID given to IIP constructor' );
-		
+		$(this).data('ow').source = $.source;
 		$.server = options.server || '/fcgi-bin/iipsrv.fcgi';
 		
 		$.render = options.render || 'random';
@@ -29,7 +27,7 @@
     	else $.images = [{ src:options.image, sds:"0,90"} ];
     	
     	$.fileFormat = options.fileFormat;
-    	//console.log($.fileFormat);
+    	console.log($.fileFormat);
     	
     	$.credit = options.credit || null;
     	
@@ -86,7 +84,10 @@
 		$.svc_id = "info:lanl-repo/svc/getRegion";
 		$.openUrl = "";
 		// end djatoka add
-		console.info('plugin initialised');
+		console.info('plugin initialised @ element%s',$.source);
+		console.info($(this).data('ow').target);	
+		console.info($(this).data('ow').source);
+		$($.source).addClass("targetframe");
 		$(this).load();
 		}
 
@@ -97,7 +98,7 @@
 	
 		var winWidth = $($.source).width();
 		var winHeight = $($.source).height();
-	
+		console.log("minwidth=%i minheight=%i",winWidth,winHeight);
 		if( winWidth>winHeight ){
 		  // For panoramic images, use a large navigation window
 		  if( tx > 2*ty ) thumb = winWidth / 2;
@@ -126,12 +127,16 @@
 		$.wid = tx;
 		$.hei = ty;
 		$.res--;
+		console.log("CalcMinSizes: wid=%i hei=%i",$.wid,$.hei);
 		return;
 	}
 	/*
-	* Calls the IIPImage server
+	* Calls an image server according to the specified settings
 	*/
 	$.fn.load = function(){
+		/*
+		* Calls the IIPImage server
+		*/
 		if($.fileFormat == "iip"){
 			var query_string = "&obj=IIP,1.0&obj=Max-size&obj=Tile-size&obj=Resolution-number";
 			// issue the ajax query
@@ -160,6 +165,9 @@
 			 },
 			});
 		}
+		/*
+		* Calls the Zoomify pseudo-server
+		*/
 		else if($.fileFormat == "zoomify"){
 			var query_string = "ImageProperties.xml";
 			$.ajax({
@@ -184,6 +192,9 @@
 			 },
 			});
 		}
+		/*
+		* Calls the Djatoka image server
+		*/
 		else if($.fileFormat == "djatoka"){
 			// MODIFY
 			$.ajax({
@@ -206,7 +217,6 @@
 		return;
 	}
 	$.fn.initialiseZoomify = function(){
-		//var imageSize = size.clone();
 		var tiles = [2];
 		var imageSize =  [2];
 		tiles[0] = Math.ceil( $.max_width / $.standardTileSize );
@@ -257,47 +267,60 @@
     $.fn.createNavigationWindow = function(){
     	console.log("called createNavigationWindow()");
     	
-    	var navcontainer = $('<div id="navcontainer"></div>').css("width",$.min_x).css("height",10);
+    	var navcontainer = $('<div></div>').addClass("navcontainer").css("width",$.min_x).css("height",10);
     	// we'll worry later about how to change the @title into a proper tooltip
-    	var toolbar = $('<div id="toolbar"></div>').css("width",$.min_x).attr("title",'* Drag to move. Double Click to show/hide navigation buttons');
+    	var toolbar = $('<div></div>').addClass("toolbar").css("width",$.min_x).attr("title",'* Drag to move. Double Click to show/hide navigation buttons');
     	navcontainer.append(toolbar);
     	if($.showNavigation){
 			// Create our navigation div and inject it inside our frame
-			var navwin = $('<div id="navwin"></div>').css("width",$.min_x).css("height",$.min_y).css("position","relative");
+			var navwin = $('<div></div>').addClass("navwin").css("width",$.min_x).css("height",$.min_y).css("position","relative");
 			navcontainer.append(navwin);
 			var src="";
 			// Create our navigation image and inject inside the div we just created
 			if($.fileFormat == "iip")
 				var src = $.server + '?FIF=' + $.images[0].src + '&SDS=' + $.images[0].sds + '&CNT=1.0' +'&WID=' + $.min_x + '&QLT=99&CVT=jpeg';
 			 else if($.fileFormat == "zoomify")
-				src =  $.server + $.images[0].src+"/TileGroup"+0+"/0-0-0.jpg";
+				src =  $.server +"/"+ $.images[0].src+"/TileGroup"+0+"/0-0-0.jpg";
 			else if($.fileFormat == "djatoka")
 				src =  $.server +  "?url_ver=Z39.88-2004&rft_id="
 				            + $.images[0].src + "&svc_id=" + $.svc_id
 				            + "&svc_val_fmt=" + $.svc_val_fmt
 				            + "&svc.format=image/jpeg&svc.scale=" + $.min_x + "," + $.min_y;
 			
-			var navimage = $('<img id="navigation"/>').attr("src",src);
+			var navimage = $('<img/>').addClass("navigation").attr("src",src);
 			navwin.append(navimage);
 			
 			// Create our navigation zone and inject inside the navigation div
 			var zone;
 			if($.fileFormat == "iip")
-				zone = $('<div id="zone"></div>').css("width",$.min_x/2).css("height",$.min_y/2).css("opacity",0.4);
+				zone = $('<div class="zone"></div>').css("width",$.min_x/2).css("height",$.min_y/2).css("opacity",0.4);
 			else
 				// TODO
-				zone = $('<div id="zone"></div>').css("width",$.min_x/2).css("height",$.min_y/2).css("opacity",0.4);
+				zone = $('<div class="zone"></div>').css("width",$.min_x/2).css("height",$.min_y/2).css("opacity",0.4);
 			navwin.append(zone);
     	}
     	// Create our progress bar
-    	var loadBarContainer = $('<div id="loadBarContainer"></div>').css("width",$.min_x-2).css("height",10).append($('<div id="loadBar"></div>'));
+    	var loadBarContainer = $('<div></div>').addClass("loadBarContainer").css("width",$.min_x-2).css("height",10).append($('<div></div>').addClass("loadBar"));
     	
     	// Create our nav buttons
-    	var navbuttons = $('<img id="shiftLeft" src="images/left.png"/><img id="shiftUp" src="images/up.png"/><img id="shiftRight" src="images/right.png"/><br/><img id="shiftDown" src="images/down.png"/><br/><img id="zoomIn" src="images/zoomIn.png"/><img id="zoomOut" src="images/zoomOut.png"/><img id="reset" src="images/reset.png"/>');
-    	navbuttons = $("<div/>").attr("id","navbuttons").append(navbuttons);
+    	
+    	var sl = $('<img/>').addClass("shiftLeft").attr("src","images/left.png");
+    	var su = $('<img/>').addClass("shiftUp").attr("src","images/up.png");
+    	var sr = $('<img/>').addClass("shiftRight").attr("src","images/right.png");
+    	var br1 = $('<br/>');
+    	var sd = $('<img/>').addClass("shiftDown").attr("src","images/down.png");
+    	var br2 = $('<br/>');
+    	var zi = $('<img/>').addClass("zoomIn").attr("src","images/zoomIn.png");
+    	var zo = $('<img/>').addClass("zoomOut").attr("src","images/zoomOut.png");
+    	var re = $('<img/>').addClass("reset").attr("src","images/reset.png");
+    	//var navbuttons = new Array();
+    	//navbuttons = [sl,su,sr,sd,br1,zi,zo,re];
+    	
+    	navbuttons = $("<div></div>").addClass("navbuttons").append(sl,su,sr,br1,sd,br2,zi,zo,re);
     	navcontainer.append(navbuttons);
     	navcontainer.append(loadBarContainer);
     	// and then snap it into the page
+    	console.log($.source);
     	$($.source).append(navcontainer);
     	// Hide our navigation buttons if requested
     	if( $.showNavButtons == false ) {
@@ -305,63 +328,66 @@
     		return;
     	};
     	
-    	$('#zone').draggable({
-    						containment:"#navwin"
+    	$($.source+" "+'div.zone').draggable({
+    						containment:$($.source +" div.navwin")
     						,stop: function(event, ui) {
 								$(this).scrollNavigation(event,ui);
 							}
 							,start:function(event, ui) {
-								$.navpos = [$('#zone').position().left, $('#zone').position().top-10];
+								$.navpos = [$($.source+" "+'div.zone').position().left, $($.source+" "+'div.zone').position().top-10];
 							}
     	});
+    	
+    	
     	
     	navcontainer.draggable( {containment:$.source, handle:"toolbar"} );
     	
     	// ADD EVENT BINDINGS TO NAV BUTTONS
-    	$('#zoomIn').bind( 'click', $(this).zoomIn);
-		$('#zoomOut').bind( 'click', $(this).zoomOut);
-		$('#reset').bind( 'click', function(){
+    	$($.source+' img.zoomIn').bind( 'click', $(this).zoomIn);
+		$($.source+' img.zoomOut').bind( 'click', $(this).zoomOut);
+		$($.source+' img.reset').bind( 'click', function(){
 			window.location=window.location; 
 		});
-		$('#shiftLeft').bind( 'click', function(){
+		$($.source+' img.shiftLeft').bind( 'click', function(){
 			$(this).scrollTo(-$.rgn_w/3,0); 
 		});
-		$('#shiftUp').bind( 'click', function(){
+		$($.source+' img.shiftUp').bind( 'click', function(){
 			$(this).scrollTo(0,-$.rgn_h/3); 
 		});
-		$('#shiftDown').bind( 'click', function(){
+		$($.source+' img.shiftDown').bind( 'click', function(){
 			$(this).scrollTo(0,$.rgn_h/3); 
 		});
-		$('#shiftRight').bind( 'click', function(){
+		$($.source+' img.shiftRight').bind( 'click', function(){
 			$(this).scrollTo($.rgn_w/3,0); 
 		});
 		
-		$('#navigation').bind('mousewheel', $(this).zoom);
+		$($.source+' img.navigation').bind('mousewheel', $(this).zoom);
 		
-		$('#zone').bind('mousewheel', $(this).zoom);
+		$($.source+" "+'div.zone').bind('mousewheel', $(this).zoom);
 		
 		// TODO for the time being I leave behind minor events bound to mousewheel and #zone.click
+		
     }
 
 	$.fn.refreshLoadBar=function() {
 
 	    // Update the loaded tiles number, grow the loadbar size
 	    var w = ($.nTilesLoaded / $.nTilesToLoad) * $.min_x;
-	    $('#loadBar').css( 'width', w );
+	    $($.source+" "+"div.loadBar").css( 'width', w );
 
 	    // Display the % in the progress bar
-	    $('#loadBar').html('loading&nbsp;:&nbsp;'+Math.round($.nTilesLoaded/$.nTilesToLoad*100) + '%' );
+	    $($.source+" "+'div.loadBar').html('loading&nbsp;:&nbsp;'+Math.round($.nTilesLoaded/$.nTilesToLoad*100) + '%' );
 		
-		$('#loadBarContainer').fadeIn();
-	    if( $('#loadBarContainer').css( 'opacity') != 0.85 ){
-	      $('#loadBarContainer').css( 'opacity', 0.85 );
+		$($.source+" "+'div.loadBarContainer').fadeIn();
+	    if( $($.source+" "+'div.loadBarContainer').css( 'opacity') != 0.85 ){
+	      $($.source+" "+'div.loadBarContainer').css( 'opacity', 0.85 );
 	    }
 
 	    // If we're done with loading, fade out the load bar
 	    if( $.nTilesLoaded == $.nTilesToLoad ){
 	      // Fade out our progress bar and loading animation in a chain
-	      $('#target').css( 'cursor', 'move' );
-	      $('#loadBarContainer').fadeOut();
+	      $($.source+" "+'div.target').css( 'cursor', 'move' );
+	      $($.source+" "+'div.loadBarContainer').fadeOut();
 	    }
 
 	  }
@@ -371,8 +397,8 @@
    		var xmove = 0;
 		var ymove = 0;
 	
-		var zone_w = $("#zone").width();
-		var zone_h = $("#zone").height();
+		var zone_w = $($.source+" "+'div.zone').width();
+		var zone_h = $($.source+" "+'div.zone').height();
 		//console.log(ui.position);
 		  xmove = ui.position.left;
 		  ymove = ui.position.top-10;
@@ -410,6 +436,7 @@
 	}
     
     $.fn.zoomIn = function(){
+    	$(this).trigger("zoomIn");
    		if( ($.wid <= ($.max_width/2)) && ($.hei <= ($.max_height/2)) ){
 		   $.res++;
 		   $.wid = $.max_width;
@@ -452,6 +479,7 @@
     }
     
     $.fn.checkBounds = function(dx,dy){
+    	console.debug("checkBounds input: dx=%i dy=%i",dx,dy);
    		var x = $.rgn_x + dx;
 		var y = $.rgn_y + dy;
 		if( x > $.wid - $.rgn_w ) x = $.wid - $.rgn_w;
@@ -464,6 +492,7 @@
     }
 	
 	$.fn.zoomOut = function(){
+		$(this).trigger("zoomOut");
    		console.log("called zoom out");
    		if( ($.wid > $.rgn_w) || ($.hei > $.rgn_h) ){
 		  $.res--;
@@ -503,8 +532,9 @@
     }
     
     $.fn.scroll = function(){
-    	var xmove =  - $('#target').offset().left;
-		var ymove =  - $('#target').offset().top;
+    	var xmove =  - $($.source+" "+'div.target').position().left;
+    	console.debug($($.source+" "+'div.target').offset().left,$($.source+" "+'div.target').position().left);
+		var ymove =  - $($.source+" "+'div.target').position().top;
 		$(this).scrollTo( xmove, ymove );
     }
 	
@@ -518,9 +548,9 @@
     	$(this).createNavigationWindow();
     	
     	// Create our main window target div, add our events and inject inside the frame
-    	var el = $('<div id="target"></div>').css("cursor","move");
+    	var el = $('<div></div>').addClass("target").css("cursor","move");
     	$($.source).append(el);
-		$("#target" ).draggable({scroll:true
+		$($.source+" "+'div.target').draggable({scroll:true
 									,stop: function(event, ui) {
 											$(this).scroll();
 											return;
@@ -529,7 +559,8 @@
 											return;
 									}
 								});
-		$("#target" ).bind("drag",function(event,ui) {
+							
+		$($.source+" "+'div.target').bind("drag",function(event,ui) {
   							//event.preventDefault();
   							console.log(ui.position);
   							var top = ui.position.top;
@@ -569,13 +600,18 @@
 						}
 						
   					);
-		$('#target').bind('mousewheel', $(this).zoom);
+		$($.source+" "+'div.target').bind('mousewheel', $(this).zoom);
 		$.rgn_w = winWidth;
     	$.rgn_h = winHeight;
     	
     	$(this).reCenter();
     	
+    	$(window).resize(function() {
+ 			window.location=window.location;
+		});
+    	
     	for(var i=0;i<$(this).initialZoom;i++) $(this).zoomIn();
+    	$(window).trigger("owready");
    		$(this).zoomOut();
     	$(this).requestImages();
     	$(this).positionZone();
@@ -607,8 +643,8 @@
 		if( height < $.min_y ) $.yfit = 0;
 		else $.yfit = 1;
 		if($.showNavigation){
-			var border = $('#zone')[0].offsetHeight - $('#zone')[0].clientHeight;
-			$("#zone").animate({
+			var border = $($.source+" "+'div.zone')[0].offsetHeight - $($.source+" "+'div.zone')[0].clientHeight;
+			$($.source+" "+'div.zone').animate({
 								"left":pleft,
 								"top":ptop,
 								"width": width - border/2,
@@ -625,8 +661,8 @@
    		 //var pos = $($.source).getPosition();
 
 		// Delete our old image mosaic
-		$('#target').children().remove();
-		$('#target').css("left",0).css("top",0);
+		$($.source+" "+'div.target').children().remove();
+		$($.source+" "+'div.target').css("left",0).css("top",0);
 		
 		// Get the start points for our tiles
 	   var startx = Math.floor( $.rgn_x / $.tileSize[0] );
@@ -734,7 +770,6 @@
 		var n;
 		if($.fileFormat == "iip"||$.fileFormat == "zoomify"){
 			 for(n=0;n<$.images.length;n++){
-			   console.log("Writing tile element");
 			   if($.fileFormat == "iip")
 				 tile = $("<img />").attr("class",'layer'+n).css("left",(i-startx)*$.tileSize[0] - xoffset).css("top",(j-starty)*$.tileSize[1] - yoffset);
 			   else{
@@ -756,7 +791,7 @@
 				 src = $.server+"/"+$.images[n].src +"/"+"TileGroup"+tileIndex+"/"+$.res+"-"+i+"-"+j+".jpg";
 				 }
 			   tile.attr( 'src', src );
-			   $("#target").append(tile);
+			   $($.source+" "+'div.target').append(tile);
 			 }
 			 
 		   }
@@ -780,7 +815,7 @@
 			 // We set the source at the end so that the 'load' function is properly fired
 			 //var src = this.server+"?FIF="+this.images[n].src+"&cnt="+this.contrast+"&sds="+this.images[n].sds+"&jtl="+this.res+"," + k;
 			 tile.attr( 'src', src );
-			 $("#target").append(tile);
+			 $($.source+" "+'div.target').append(tile);
 		   }
 		  } else 
 			  $.nTilesLoaded++;
@@ -800,7 +835,7 @@
 	$.fn.requestImages = function(){
    		// bypassed the refresher for the time being
 		// Set our cursor
-		$('#target').css( 'cursor', 'wait' );
+		$($.source+" "+'div.target').css( 'cursor', 'wait' );
 		// Load our image mosaic
 		$(this).loadGrid();
 		// bypassed the refresher for the time being
@@ -869,6 +904,15 @@
 		var options = $.extend(defaults, options);
 		
     	return this.each(function() {
+    		var $this = $(this);
+    		data = $this.data('ow');
+    		if ( ! data) {
+			  $(this).data('ow', {
+				  target : $this,
+				  source:null
+			  });
+   
+			}
 			$(this).initialise(options);
 			return false;
     	});
