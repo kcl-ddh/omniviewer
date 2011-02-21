@@ -35,6 +35,24 @@
     var viewer = null;
 	var aviewer = null;
 		$(document).ready(function() {
+			$(window).bind('ui-ready',function(){
+			/*
+				$("#ow2").OmniViewer({
+				image: images
+				,server: server
+				,credit: credit
+				,zoom: 1
+				,render: "random"
+                ,showNavButtons: true
+                ,showNavigation: true
+                ,debug : true
+                ,fileFormat: "iip"
+				,mode : "embedded"
+			});
+			$("#ow2").css("position","relative").css("width","300px").css("height","500px");
+			*/
+			});
+			
 			viewer = $("#ow1").OmniViewer({
 				image: images
 				,server: server
@@ -47,7 +65,7 @@
                 ,fileFormat: "iip"
 				,mode : "embedded"
 			});
-			$("#ow1").css("position","relative").css("width","300px").css("height","500px");	
+			$("#ow1").css("position","relative").css("width","300px").css("height","500px");		
 			
 			
 		});	  
@@ -61,13 +79,8 @@
  
  <table border="1">
 <tr>
-<td><div id="ow1">
-	
-   </div></td>
-<td>
-   <!--<iframe width="300px" height="500px" src="http://137.73.122.221/~56k/jqow/ow_iip_flav/"></iframe>-->
-
-</td>
+<td><div id="ow1"></div></td>
+<td><div id="ow2"></div></td>
 </tr>
 </table>
    

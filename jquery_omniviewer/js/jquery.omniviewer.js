@@ -4,100 +4,103 @@
 
 // the object embedding the plugin
 (function($){
-	$.source = null;
-	$.server = null;
-	
 	// Initialise various variables
 	$.fn.initialise = function(options){
+		$.base = $(this);
+		$.base.data('ow').source = null;
+		$.base.data('ow').server = null;
 		$.debug = options.debug;
-		$.source = "#";
-		$.source += this.attr("id") ||  alert( 'No element ID given to IIP constructor' );
-		$(this).data('ow').source = $.source;
-		$.server = options.server || '/fcgi-bin/iipsrv.fcgi';
+		$.base.data('ow').source = "#";
+		$.base.data('ow').source += this.attr("id") ||  alert( 'No element ID given to IIP constructor' );
+		$.base.data('ow').server = options.server || '/fcgi-bin/iipsrv.fcgi';
 		
-		$.render = options.render || 'random';
+		$.base.data('ow').render = options.render || 'random';
 		
 		options.image || alert( 'Image location not set in IIP constructor options');
     	if(options.image instanceof Array){
-    		$.images = new Array(options.image.length);
+    		$.base.data('ow').images = new Array(options.image.length);
 			for( i=0; i<options.image.length;i++ ){
-	    		$.images[i] = { src:options.image[i], sds:"0,90" };
+	    		$.base.data('ow').images[i] = { src:options.image[i], sds:"0,90" };
 			}
     	}
-    	else $.images = [{ src:options.image, sds:"0,90"} ];
+    	else $.base.data('ow').images = [{ src:options.image, sds:"0,90"} ];
     	
-    	$.fileFormat = options.fileFormat;
-    	console.log($.fileFormat);
+    	$.base.data('ow').fileFormat = options.fileFormat;
+    	console.info("Selected flavour: \"%s\"",$.base.data('ow').fileFormat);
     	
-    	$.credit = options.credit || null;
+    	$.base.data('ow').credit = options.credit || null;
     	
-    	$.scale = options.scale || null;
+    	$.base.data('ow').scale = options.scale || null;
     	
-    	if( options.zoom == 0 ) $.initialZoom = 0;
-    	else $.initialZoom = options.zoom || 1;
+    	if( options.zoom == 0 ) $.base.data('ow').initialZoom = 0;
+    	else $.base.data('ow').initialZoom = options.zoom || 1;
     	
-    	$.showNavButtons = true;
-    	if( options.showNavButtons == false ) $.showNavButtons = false;
+    	$.base.data('ow').showNavButtons = true;
+    	if( options.showNavButtons == false ) $.base.data('ow').showNavButtons = false;
     	
-    	$.showNavigation = true;
-    	if( options.showNavigation == false ) $.showNavigation = false;
+    	$.base.data('ow').showNavigation = true;
+    	if( options.showNavigation == false ) $.base.data('ow').showNavigation = false;
     	
     	// If we want to assign a function for a click within the image
     	// - used for multispectral curve visualization, for example
-    	$.targetclick = options.targetclick || null;
+    	$.base.data('ow').targetclick = options.targetclick || null;
     	/* global variables */
-		$.max_width = 0;
-		$.max_height = 0;
-		$.min_x = 0;
-		$.min_y = 0;
-		$.sds = "0,90";
-		$.contrast = 1.0;
-		$.opacity = 0;
-		$.wid = 0;
-		$.hei = 0;
-		$.rgn_x = 0;
-		$.rgn_y = 0;
-		$.rgn_w = $.wid;
-		$.rgn_h = $.wid;
-		$.xfit = 0;
-		$.yfit = 0;
-		$.navpos = [0,0];
-		$.tileSize = [0,0];
-		$.num_resolutions = 0;
-		$.res = 0;
-		$.standardTileSize = 256;
+		$.base.data('ow').max_width = 0;
+		$.base.data('ow').max_height = 0;
+		$.base.data('ow').min_x = 0;
+		$.base.data('ow').min_y = 0;
+		$.base.data('ow').wid = 0;
+		$.base.data('ow').hei = 0;
+		$.base.data('ow').rgn_x = 0;
+		$.base.data('ow').rgn_y = 0;
+		$.rgn_w = $.base.data('ow').wid;
+		$.rgn_h = $.base.data('ow').wid;
+		$.base.data('ow').xfit = 0;
+		$.base.data('ow').yfit = 0;
+		$.base.data('ow').navpos = [0,0];
+		$.base.data('ow').tileSize = [0,0];
+		$.base.data('ow').num_resolutions = 0;
+		$.base.data('ow').res = 0;
+		
 		$.refresher = null;
 		// if zoomify
-		if($.fileFormat == "zoomify"){
-			$.tileCountUpToTier = new Array();
-			$.tierSizeInTiles = new Array();
-			$.tierImageSize = new Array();
+		if($.base.data('ow').fileFormat == "zoomify"){
+			$.base.data('ow').tileCountUpToTier = new Array();
+			$.base.data('ow').tierSizeInTiles = new Array();
+			$.base.data('ow').tierImageSize = new Array();
 		}
 		// Number of tiles loaded
-		$.nTilesLoaded = 0;
-		$.nTilesToLoad = 0;
+		$.base.data('ow').nTilesLoaded = 0;
+		$.base.data('ow').nTilesToLoad = 0;
 		// start djatoka add
-		$.max_zoom = 7;
-		$.top_left_x = 0;
-		$.top_left_y = 0;
+		$.base.data('ow').max_zoom = 7;
+		$.base.data('ow').top_left_x = 0;
+		$.base.data('ow').top_left_y = 0;
+		// end djatoka add
+		console.info('plugin initialised @ element%s',$.base.data('ow').source);
+		console.info($.fn.data);
+		$($.base.data('ow').source).addClass("targetframe");
+		
+		// global variables (they do not vary from an instance to another)
 		$.svc_val_fmt = "info:ofi/fmt:kev:mtx:jpeg2000";
 		$.svc_id = "info:lanl-repo/svc/getRegion";
 		$.openUrl = "";
-		// end djatoka add
-		console.info('plugin initialised @ element%s',$.source);
-		console.info($(this).data('ow').target);	
-		console.info($(this).data('ow').source);
-		$($.source).addClass("targetframe");
+		$.standardTileSize = 256;
+		$.sds = "0,90";
+		$.contrast = 1.0;
+		$.opacity = 0;
+		// end global variables
 		$(this).load();
 		}
+		
 
 	$.fn.calculateMinSizes = function(){
-		var tx = $.max_width;
-		var ty = $.max_height;
+		var tx = $.base.data('ow').max_width;
+		var ty = $.base.data('ow').max_height;
 		var thumb = 100;
 	
-		var winWidth = $($.source).width();
-		var winHeight = $($.source).height();
+		var winWidth = $($.base.data('ow').source).width();
+		var winHeight = $($.base.data('ow').source).height();
 		console.log("minwidth=%i minheight=%i",winWidth,winHeight);
 		if( winWidth>winHeight ){
 		  // For panoramic images, use a large navigation window
@@ -106,28 +109,28 @@
 		}
 		else thumb = winHeight / 4;
 	
-		var r = $.res;
+		var r = $.base.data('ow').res;
 		while( tx > thumb ){
 		  tx = parseInt(tx / 2);
 		  ty = parseInt(ty / 2);
 		  // Make sure we don't set our navigation image too small!
 		  if( --r == 1 ) break;
 		}
-		$.min_x = tx;
-		$.min_y = ty;
+		$.base.data('ow').min_x = tx;
+		$.base.data('ow').min_y = ty;
 	
 		// Determine the resolution for this image view
-		tx = $.max_width;
-		ty = $.max_height;
+		tx = $.base.data('ow').max_width;
+		ty = $.base.data('ow').max_height;
 		while( tx > winWidth && ty > winHeight ){
 		  tx = parseInt(tx / 2);
 		  ty = parseInt(ty / 2);
-		  $.res--;
+		  $.base.data('ow').res--;
 		}
-		$.wid = tx;
-		$.hei = ty;
-		$.res--;
-		console.log("CalcMinSizes: wid=%i hei=%i",$.wid,$.hei);
+		$.base.data('ow').wid = tx;
+		$.base.data('ow').hei = ty;
+		$.base.data('ow').res--;
+		console.log("CalcMinSizes: wid=%i hei=%i",$.base.data('ow').wid,$.base.data('ow').hei);
 		return;
 	}
 	/*
@@ -137,26 +140,26 @@
 		/*
 		* Calls the IIPImage server
 		*/
-		if($.fileFormat == "iip"){
+		if($.base.data('ow').fileFormat == "iip"){
 			var query_string = "&obj=IIP,1.0&obj=Max-size&obj=Tile-size&obj=Resolution-number";
 			// issue the ajax query
 			$.ajax({
-			 url: $.server + "?" +"FIF=" + $.images[0].src + query_string,
+			 url: $.base.data('ow').server + "?" +"FIF=" + $.base.data('ow').images[0].src + query_string,
 			 success: function(data){
-				var response = data || alert( "No response from server " + $.server );
+				var response = data || alert( "No response from server " + $.base.data('ow').server );
 				console.info(response);
 				var tmp = response.split( "Max-size" );
-				if(!tmp[1]) alert( "Unexpected response from server " + $.server );
+				if(!tmp[1]) alert( "Unexpected response from server " + $.base.data('ow').server );
 				var size = tmp[1].split(" ");
-				$.max_width = parseInt( size[0].substring(1,size[0].length) );
-				$.max_height = parseInt( size[1] );
+				$.base.data('ow').max_width = parseInt( size[0].substring(1,size[0].length) );
+				$.base.data('ow').max_height = parseInt( size[1] );
 				tmp = response.split( "Tile-size" );
 				size = tmp[1].split(" ");
-				$.tileSize[0] = parseInt( size[0].substring(1,size[0].length) );
-				$.tileSize[1] = parseInt( size[1] );
+				$.base.data('ow').tileSize[0] = parseInt( size[0].substring(1,size[0].length) );
+				$.base.data('ow').tileSize[1] = parseInt( size[1] );
 				tmp = response.split( "Resolution-number" );
-				$.num_resolutions = parseInt( tmp[1].substring(1,tmp[1].length) );
-				$.res = $.num_resolutions;
+				$.base.data('ow').num_resolutions = parseInt( tmp[1].substring(1,tmp[1].length) );
+				$.base.data('ow').res = $.base.data('ow').num_resolutions;
 				$(this).createWindows();
 				
 			 },
@@ -168,22 +171,22 @@
 		/*
 		* Calls the Zoomify pseudo-server
 		*/
-		else if($.fileFormat == "zoomify"){
+		else if($.base.data('ow').fileFormat == "zoomify"){
 			var query_string = "ImageProperties.xml";
 			$.ajax({
-			 url: $.server + "/"+$.images[0].src + "/"+ query_string,
+			 url: $.base.data('ow').server + "/"+$.base.data('ow').images[0].src + "/"+ query_string,
 			 success: function(data){
-				$.max_width = parseInt(0);
-				$.max_height = parseInt(1);
-				$.tileSize[0] = $.standardTileSize;
-				$.tileSize[1] = $.standardTileSize;
+				$.base.data('ow').max_width = parseInt(0);
+				$.base.data('ow').max_height = parseInt(1);
+				$.base.data('ow').tileSize[0] = $.standardTileSize;
+				$.base.data('ow').tileSize[1] = $.standardTileSize;
 				$(data).find("IMAGE_PROPERTIES").each(function(){
-					$.max_width = parseInt($(this).attr("WIDTH"));
-					$.max_height = parseInt($(this).attr("HEIGHT"));
-					$.tileSize[0] = parseInt($(this).attr("TILESIZE"));
-					$.tileSize[1] = $.tileSize[0];
+					$.base.data('ow').max_width = parseInt($(this).attr("WIDTH"));
+					$.base.data('ow').max_height = parseInt($(this).attr("HEIGHT"));
+					$.base.data('ow').tileSize[0] = parseInt($(this).attr("TILESIZE"));
+					$.base.data('ow').tileSize[1] = $.base.data('ow').tileSize[0];
 				});
-				var response = data || alert( "No response from server " + $.server );
+				var response = data || alert( "No response from server " + $.base.data('ow').server );
 				$(this).initialiseZoomify();
 				$(this).createWindows();
 			 },
@@ -195,18 +198,18 @@
 		/*
 		* Calls the Djatoka image server
 		*/
-		else if($.fileFormat == "djatoka"){
+		else if($.base.data('ow').fileFormat == "djatoka"){
 			// MODIFY
 			$.ajax({
-			 url: $.server + "?"+"url_ver=Z39.88-2004&rft_id=" + $.images[0].src + "&svc_id=info:lanl-repo/svc/getMetadata",
+			 url: $.base.data('ow').server + "?"+"url_ver=Z39.88-2004&rft_id=" + $.base.data('ow').images[0].src + "&svc_id=info:lanl-repo/svc/getMetadata",
 			 success: function(data){
 				var resp = data || alert("No response from server " + this.server);
-				$.max_width = parseInt(resp.width);
-	            $.max_height = parseInt(resp.height);
-	            $.tileSize[0] = 256;
-		        $.tileSize[1] = 256;
-	            $.num_resolutions = parseInt(resp.levels);
-	            $.res = $.num_resolutions;
+				$.base.data('ow').max_width = parseInt(resp.width);
+	            $.base.data('ow').max_height = parseInt(resp.height);
+	            $.base.data('ow').tileSize[0] = 256;
+		        $.base.data('ow').tileSize[1] = 256;
+	            $.base.data('ow').num_resolutions = parseInt(resp.levels);
+	            $.base.data('ow').res = $.base.data('ow').num_resolutions;
 				$(this).createWindows();
 			 },
 			 error:function(){
@@ -219,13 +222,13 @@
 	$.fn.initialiseZoomify = function(){
 		var tiles = [2];
 		var imageSize =  [2];
-		tiles[0] = Math.ceil( $.max_width / $.standardTileSize );
-		tiles[1] = Math.ceil( $.max_height / $.standardTileSize );
-		imageSize[0] = $.max_width;
-		imageSize[1] = $.max_height;
+		tiles[0] = Math.ceil( $.base.data('ow').max_width / $.standardTileSize );
+		tiles[1] = Math.ceil( $.base.data('ow').max_height / $.standardTileSize );
+		imageSize[0] = $.base.data('ow').max_width;
+		imageSize[1] = $.base.data('ow').max_height;
 		
-		$.tierSizeInTiles.push(new Array(tiles[0],tiles[1]));
-		$.tierImageSize.push( imageSize );
+		$.base.data('ow').tierSizeInTiles.push(new Array(tiles[0],tiles[1]));
+		$.base.data('ow').tierImageSize.push( imageSize );
 		//console.log("d"+tiles);
 
 		while (imageSize[0] > $.standardTileSize ||
@@ -236,30 +239,30 @@
 			
 			tiles[0] = Math.ceil( imageSize[0] / $.standardTileSize );        
 			tiles[1] = Math.ceil( imageSize[1] / $.standardTileSize );
-			//console.log("pre "+$.tierSizeInTiles);
-		    $.tierSizeInTiles.push(new Array(tiles[0],tiles[1]));
-		    //console.log("post "+$.tierSizeInTiles);
-		    $.tierImageSize.push( imageSize );
-		    //console.log($.tierImageSize);
+			//console.log("pre "+$.base.data('ow').tierSizeInTiles);
+		    $.base.data('ow').tierSizeInTiles.push(new Array(tiles[0],tiles[1]));
+		    //console.log("post "+$.base.data('ow').tierSizeInTiles);
+		    $.base.data('ow').tierImageSize.push( imageSize );
+		    //console.log($.base.data('ow').tierImageSize);
 		}
 
-		$.tierSizeInTiles.reverse();
-		$.tierImageSize.reverse();
-		$.numberOfTiers = $.tierSizeInTiles.length;
+		$.base.data('ow').tierSizeInTiles.reverse();
+		$.base.data('ow').tierImageSize.reverse();
+		$.numberOfTiers = $.base.data('ow').tierSizeInTiles.length;
 
-		$.tileCountUpToTier[0] = 0;      
+		$.base.data('ow').tileCountUpToTier[0] = 0;      
 		for (var i = 1; i < $.numberOfTiers; i++) {
-			//console.log("$.tierSizeInTiles tier=%i %i",i-1,$.tierSizeInTiles[i-1][0]);
-			var temp = $.tierSizeInTiles[i-1][0] * $.tierSizeInTiles[i-1][1] +
-		        $.tileCountUpToTier[i-1];
+			//console.log("$.base.data('ow').tierSizeInTiles tier=%i %i",i-1,$.base.data('ow').tierSizeInTiles[i-1][0]);
+			var temp = $.base.data('ow').tierSizeInTiles[i-1][0] * $.base.data('ow').tierSizeInTiles[i-1][1] +
+		        $.base.data('ow').tileCountUpToTier[i-1];
 		    //console.log("tileCountUpToTier %i",temp);
-		    $.tileCountUpToTier.push(
+		    $.base.data('ow').tileCountUpToTier.push(
 		        temp
 		        );
-		    //console.log("$.tileCountUpToTier tier=%i %i",i,temp);
+		    //console.log("$.base.data('ow').tileCountUpToTier tier=%i %i",i,temp);
 		}
-		$.num_resolutions = $.numberOfTiers;
-		$.res = $.num_resolutions;
+		$.base.data('ow').num_resolutions = $.numberOfTiers;
+		$.base.data('ow').res = $.base.data('ow').num_resolutions;
 	}
 	/*
 	* Create our navigation window
@@ -267,40 +270,40 @@
     $.fn.createNavigationWindow = function(){
     	console.log("called createNavigationWindow()");
     	
-    	var navcontainer = $('<div></div>').addClass("navcontainer").css("width",$.min_x).css("height",10);
+    	var navcontainer = $('<div></div>').addClass("navcontainer").css("width",$.base.data('ow').min_x).css("height",10);
     	// we'll worry later about how to change the @title into a proper tooltip
-    	var toolbar = $('<div></div>').addClass("toolbar").css("width",$.min_x).attr("title",'* Drag to move. Double Click to show/hide navigation buttons');
+    	var toolbar = $('<div></div>').addClass("toolbar").css("width",$.base.data('ow').min_x).attr("title",'* Drag to move. Double Click to show/hide navigation buttons');
     	navcontainer.append(toolbar);
-    	if($.showNavigation){
+    	if($.base.data('ow').showNavigation){
 			// Create our navigation div and inject it inside our frame
-			var navwin = $('<div></div>').addClass("navwin").css("width",$.min_x).css("height",$.min_y).css("position","relative");
+			var navwin = $('<div></div>').addClass("navwin").css("width",$.base.data('ow').min_x).css("height",$.base.data('ow').min_y).css("position","relative");
 			navcontainer.append(navwin);
 			var src="";
 			// Create our navigation image and inject inside the div we just created
-			if($.fileFormat == "iip")
-				var src = $.server + '?FIF=' + $.images[0].src + '&SDS=' + $.images[0].sds + '&CNT=1.0' +'&WID=' + $.min_x + '&QLT=99&CVT=jpeg';
-			 else if($.fileFormat == "zoomify")
-				src =  $.server +"/"+ $.images[0].src+"/TileGroup"+0+"/0-0-0.jpg";
-			else if($.fileFormat == "djatoka")
-				src =  $.server +  "?url_ver=Z39.88-2004&rft_id="
-				            + $.images[0].src + "&svc_id=" + $.svc_id
+			if($.base.data('ow').fileFormat == "iip")
+				var src = $.base.data('ow').server + '?FIF=' + $.base.data('ow').images[0].src + '&SDS=' + $.base.data('ow').images[0].sds + '&CNT=1.0' +'&WID=' + $.base.data('ow').min_x + '&QLT=99&CVT=jpeg';
+			 else if($.base.data('ow').fileFormat == "zoomify")
+				src =  $.base.data('ow').server +"/"+ $.base.data('ow').images[0].src+"/TileGroup"+0+"/0-0-0.jpg";
+			else if($.base.data('ow').fileFormat == "djatoka")
+				src =  $.base.data('ow').server +  "?url_ver=Z39.88-2004&rft_id="
+				            + $.base.data('ow').images[0].src + "&svc_id=" + $.svc_id
 				            + "&svc_val_fmt=" + $.svc_val_fmt
-				            + "&svc.format=image/jpeg&svc.scale=" + $.min_x + "," + $.min_y;
+				            + "&svc.format=image/jpeg&svc.scale=" + $.base.data('ow').min_x + "," + $.base.data('ow').min_y;
 			
 			var navimage = $('<img/>').addClass("navigation").attr("src",src);
 			navwin.append(navimage);
 			
 			// Create our navigation zone and inject inside the navigation div
 			var zone;
-			if($.fileFormat == "iip")
-				zone = $('<div class="zone"></div>').css("width",$.min_x/2).css("height",$.min_y/2).css("opacity",0.4);
+			if($.base.data('ow').fileFormat == "iip")
+				zone = $('<div class="zone"></div>').css("width",$.base.data('ow').min_x/2).css("height",$.base.data('ow').min_y/2).css("opacity",0.4);
 			else
 				// TODO
-				zone = $('<div class="zone"></div>').css("width",$.min_x/2).css("height",$.min_y/2).css("opacity",0.4);
+				zone = $('<div class="zone"></div>').css("width",$.base.data('ow').min_x/2).css("height",$.base.data('ow').min_y/2).css("opacity",0.4);
 			navwin.append(zone);
     	}
     	// Create our progress bar
-    	var loadBarContainer = $('<div></div>').addClass("loadBarContainer").css("width",$.min_x-2).css("height",10).append($('<div></div>').addClass("loadBar"));
+    	var loadBarContainer = $('<div></div>').addClass("loadBarContainer").css("width",$.base.data('ow').min_x-2).css("height",10).append($('<div></div>').addClass("loadBar"));
     	
     	// Create our nav buttons
     	
@@ -320,74 +323,74 @@
     	navcontainer.append(navbuttons);
     	navcontainer.append(loadBarContainer);
     	// and then snap it into the page
-    	console.log($.source);
-    	$($.source).append(navcontainer);
+    	console.log($.base.data('ow').source);	
+    	$($.base.data('ow').source).append(navcontainer);
     	// Hide our navigation buttons if requested
-    	if( $.showNavButtons == false ) {
+    	if( $.base.data('ow').showNavButtons == false ) {
     		// act accordingly
     		return;
     	};
     	
-    	$($.source+" "+'div.zone').draggable({
-    						containment:$($.source +" div.navwin")
+    	$($.base.data('ow').source+" "+'div.zone').draggable({
+    						containment:$($.base.data('ow').source +" div.navwin")
     						,stop: function(event, ui) {
 								$(this).scrollNavigation(event,ui);
 							}
 							,start:function(event, ui) {
-								$.navpos = [$($.source+" "+'div.zone').position().left, $($.source+" "+'div.zone').position().top-10];
+								$.base.data('ow').navpos = [$($.base.data('ow').source+" "+'div.zone').position().left, $($.base.data('ow').source+" "+'div.zone').position().top-10];
 							}
     	});
     	
     	
     	
-    	navcontainer.draggable( {containment:$.source, handle:"toolbar"} );
+    	navcontainer.draggable( {containment:$.base.data('ow').source, handle:"toolbar"} );
     	
     	// ADD EVENT BINDINGS TO NAV BUTTONS
-    	$($.source+' img.zoomIn').bind( 'click', $(this).zoomIn);
-		$($.source+' img.zoomOut').bind( 'click', $(this).zoomOut);
-		$($.source+' img.reset').bind( 'click', function(){
+    	$($.base.data('ow').source+' img.zoomIn').bind( 'click', $(this).zoomIn);
+		$($.base.data('ow').source+' img.zoomOut').bind( 'click', $(this).zoomOut);
+		$($.base.data('ow').source+' img.reset').bind( 'click', function(){
 			window.location=window.location; 
 		});
-		$($.source+' img.shiftLeft').bind( 'click', function(){
+		$($.base.data('ow').source+' img.shiftLeft').bind( 'click', function(){
 			$(this).scrollTo(-$.rgn_w/3,0); 
 		});
-		$($.source+' img.shiftUp').bind( 'click', function(){
+		$($.base.data('ow').source+' img.shiftUp').bind( 'click', function(){
 			$(this).scrollTo(0,-$.rgn_h/3); 
 		});
-		$($.source+' img.shiftDown').bind( 'click', function(){
+		$($.base.data('ow').source+' img.shiftDown').bind( 'click', function(){
 			$(this).scrollTo(0,$.rgn_h/3); 
 		});
-		$($.source+' img.shiftRight').bind( 'click', function(){
+		$($.base.data('ow').source+' img.shiftRight').bind( 'click', function(){
 			$(this).scrollTo($.rgn_w/3,0); 
 		});
 		
-		$($.source+' img.navigation').bind('mousewheel', $(this).zoom);
+		$($.base.data('ow').source+' img.navigation').bind('mousewheel', $(this).zoom);
 		
-		$($.source+" "+'div.zone').bind('mousewheel', $(this).zoom);
+		$($.base.data('ow').source+" "+'div.zone').bind('mousewheel', $(this).zoom);
 		
 		// TODO for the time being I leave behind minor events bound to mousewheel and #zone.click
-		
+		$(window).trigger('ui-ready');
     }
 
 	$.fn.refreshLoadBar=function() {
 
 	    // Update the loaded tiles number, grow the loadbar size
-	    var w = ($.nTilesLoaded / $.nTilesToLoad) * $.min_x;
-	    $($.source+" "+"div.loadBar").css( 'width', w );
+	    var w = ($.base.data('ow').nTilesLoaded / $.base.data('ow').nTilesToLoad) * $.base.data('ow').min_x;
+	    $($.base.data('ow').source+" "+"div.loadBar").css( 'width', w );
 
 	    // Display the % in the progress bar
-	    $($.source+" "+'div.loadBar').html('loading&nbsp;:&nbsp;'+Math.round($.nTilesLoaded/$.nTilesToLoad*100) + '%' );
+	    $($.base.data('ow').source+" "+'div.loadBar').html('loading&nbsp;:&nbsp;'+Math.round($.base.data('ow').nTilesLoaded/$.base.data('ow').nTilesToLoad*100) + '%' );
 		
-		$($.source+" "+'div.loadBarContainer').fadeIn();
-	    if( $($.source+" "+'div.loadBarContainer').css( 'opacity') != 0.85 ){
-	      $($.source+" "+'div.loadBarContainer').css( 'opacity', 0.85 );
+		$($.base.data('ow').source+" "+'div.loadBarContainer').fadeIn();
+	    if( $($.base.data('ow').source+" "+'div.loadBarContainer').css( 'opacity') != 0.85 ){
+	      $($.base.data('ow').source+" "+'div.loadBarContainer').css( 'opacity', 0.85 );
 	    }
 
 	    // If we're done with loading, fade out the load bar
-	    if( $.nTilesLoaded == $.nTilesToLoad ){
+	    if( $.base.data('ow').nTilesLoaded == $.base.data('ow').nTilesToLoad ){
 	      // Fade out our progress bar and loading animation in a chain
-	      $($.source+" "+'div.target').css( 'cursor', 'move' );
-	      $($.source+" "+'div.loadBarContainer').fadeOut();
+	      $($.base.data('ow').source+" "+'div.target').css( 'cursor', 'move' );
+	      $($.base.data('ow').source+" "+'div.loadBarContainer').fadeOut();
 	    }
 
 	  }
@@ -397,20 +400,20 @@
    		var xmove = 0;
 		var ymove = 0;
 	
-		var zone_w = $($.source+" "+'div.zone').width();
-		var zone_h = $($.source+" "+'div.zone').height();
+		var zone_w = $($.base.data('ow').source+" "+'div.zone').width();
+		var zone_h = $($.base.data('ow').source+" "+'div.zone').height();
 		//console.log(ui.position);
 		  xmove = ui.position.left;
 		  ymove = ui.position.top-10;
-		  if( (Math.abs(xmove-$.navpos[0]) < 3) && (Math.abs(ymove-$.navpos[1]) < 3) ) return;
+		  if( (Math.abs(xmove-$.base.data('ow').navpos[0]) < 3) && (Math.abs(ymove-$.base.data('ow').navpos[1]) < 3) ) return;
 	
-		if( xmove > ($.min_x - zone_w) ) xmove = $.min_x - zone_w;
-		if( ymove > ($.min_y - zone_h) ) ymove = $.min_y - zone_h;
+		if( xmove > ($.base.data('ow').min_x - zone_w) ) xmove = $.base.data('ow').min_x - zone_w;
+		if( ymove > ($.base.data('ow').min_y - zone_h) ) ymove = $.base.data('ow').min_y - zone_h;
 		if( xmove < 0 ) xmove = 0;
 		if( ymove < 0 ) ymove = 0;
 	
-		$.rgn_x = Math.round(xmove * $.wid / $.min_x);
-		$.rgn_y = Math.round(ymove * $.hei / $.min_y);
+		$.base.data('ow').rgn_x = Math.round(xmove * $.base.data('ow').wid / $.base.data('ow').min_x);
+		$.base.data('ow').rgn_y = Math.round(ymove * $.base.data('ow').hei / $.base.data('ow').min_y);
 	 
 		$(this).requestImages();
 		//if( e.event ) this.positionZone();
@@ -423,7 +426,7 @@
 		  if( (Math.abs(dx) < 3) && (Math.abs(dy) < 3) ) return;
 		  $(this).checkBounds(dx,dy);
 		  $(this).requestImages();
-		  if($.showNavigation)
+		  if($.base.data('ow').showNavigation)
 		  $(this).positionZone();
 		}
     }
@@ -437,111 +440,111 @@
     
     $.fn.zoomIn = function(){
     	$(this).trigger("zoomIn");
-   		if( ($.wid <= ($.max_width/2)) && ($.hei <= ($.max_height/2)) ){
-		   $.res++;
-		   $.wid = $.max_width;
-		   $.hei = $.max_height;
-			if($.fileFormat == "djatoka"){
-		  		var iter = $.num_resolutions;
+   		if( ($.base.data('ow').wid <= ($.base.data('ow').max_width/2)) && ($.base.data('ow').hei <= ($.base.data('ow').max_height/2)) ){
+		   $.base.data('ow').res++;
+		   $.base.data('ow').wid = $.base.data('ow').max_width;
+		   $.base.data('ow').hei = $.base.data('ow').max_height;
+			if($.base.data('ow').fileFormat == "djatoka"){
+		  		var iter = $.base.data('ow').num_resolutions;
 			}
 			else{
-				var iter = $.num_resolutions-1;
+				var iter = $.base.data('ow').num_resolutions-1;
 			}
-		   for( var i=$.res; i<iter; i++ ){
-		 $.wid = Math.floor($.wid/2);
-		 $.hei = Math.floor($.hei/2);
+		   for( var i=$.base.data('ow').res; i<iter; i++ ){
+		 $.base.data('ow').wid = Math.floor($.base.data('ow').wid/2);
+		 $.base.data('ow').hei = Math.floor($.base.data('ow').hei/2);
 		   }
 	 
-		   if( $.xfit == 1 ){
-		 $.rgn_x = $.wid/2 - ($.rgn_w/2);
+		   if( $.base.data('ow').xfit == 1 ){
+		 $.base.data('ow').rgn_x = $.base.data('ow').wid/2 - ($.rgn_w/2);
 		   }
-		   else if( $.wid > $.rgn_w ) $.rgn_x = 2*$.rgn_x + $.rgn_w/2;
+		   else if( $.base.data('ow').wid > $.rgn_w ) $.base.data('ow').rgn_x = 2*$.base.data('ow').rgn_x + $.rgn_w/2;
 	 
-		   if( $.rgn_x > $.wid ) $.rgn_x = $.wid - $.rgn_w;
-		   if( $.rgn_x < 0 ) $.rgn_x = 0;
+		   if( $.base.data('ow').rgn_x > $.base.data('ow').wid ) $.base.data('ow').rgn_x = $.base.data('ow').wid - $.rgn_w;
+		   if( $.base.data('ow').rgn_x < 0 ) $.base.data('ow').rgn_x = 0;
 	 
-		   if( $.yfit == 1 ){
-		 $.rgn_y = $.hei/2 - ($.rgn_h/2);
+		   if( $.base.data('ow').yfit == 1 ){
+		 $.base.data('ow').rgn_y = $.base.data('ow').hei/2 - ($.rgn_h/2);
 		   }
-		   else if( $.hei > $.rgn_h ) $.rgn_y = $.rgn_y*2 + $.rgn_h/2;
+		   else if( $.base.data('ow').hei > $.rgn_h ) $.base.data('ow').rgn_y = $.base.data('ow').rgn_y*2 + $.rgn_h/2;
 	 
-		   if( $.rgn_y > $.hei ) $.rgn_y = $.hei - $.rgn_h;
-		   if( $.rgn_y < 0 ) $.rgn_y = 0;
+		   if( $.base.data('ow').rgn_y > $.base.data('ow').hei ) $.base.data('ow').rgn_y = $.base.data('ow').hei - $.rgn_h;
+		   if( $.base.data('ow').rgn_y < 0 ) $.base.data('ow').rgn_y = 0;
 	 
 		   $(this).requestImages();
-		   if($.showNavigation){
+		   if($.base.data('ow').showNavigation){
 		   	$(this).positionZone();
 		   	
 		   }
-		   if( $.scale ) $(this).setScale();
+		   if( $.base.data('ow').scale ) $(this).setScale();
 	 
 		 }
     }
     
     $.fn.checkBounds = function(dx,dy){
     	console.debug("checkBounds input: dx=%i dy=%i",dx,dy);
-   		var x = $.rgn_x + dx;
-		var y = $.rgn_y + dy;
-		if( x > $.wid - $.rgn_w ) x = $.wid - $.rgn_w;
-		if( y > $.hei - $.rgn_h ) y = $.hei - $.rgn_h;
+   		var x = $.base.data('ow').rgn_x + dx;
+		var y = $.base.data('ow').rgn_y + dy;
+		if( x > $.base.data('ow').wid - $.rgn_w ) x = $.base.data('ow').wid - $.rgn_w;
+		if( y > $.base.data('ow').hei - $.rgn_h ) y = $.base.data('ow').hei - $.rgn_h;
 		if( x < 0 ) x = 0;
 		if( y < 0 ) y = 0;
-		$.rgn_x = x;
-		$.rgn_y = y;
-		console.log("check bounds %i %i",$.rgn_x,$.rgn_y);
+		$.base.data('ow').rgn_x = x;
+		$.base.data('ow').rgn_y = y;
+		console.log("check bounds %i %i",$.base.data('ow').rgn_x,$.base.data('ow').rgn_y);
     }
 	
 	$.fn.zoomOut = function(){
 		$(this).trigger("zoomOut");
    		console.log("called zoom out");
-   		if( ($.wid > $.rgn_w) || ($.hei > $.rgn_h) ){
-		  $.res--;
-		  $.wid = $.max_width;
-		  $.hei = $.max_height;
-			if($.fileFormat == "djatoka"){
-		  		var iter = $.num_resolutions;
+   		if( ($.base.data('ow').wid > $.rgn_w) || ($.base.data('ow').hei > $.rgn_h) ){
+		  $.base.data('ow').res--;
+		  $.base.data('ow').wid = $.base.data('ow').max_width;
+		  $.base.data('ow').hei = $.base.data('ow').max_height;
+			if($.base.data('ow').fileFormat == "djatoka"){
+		  		var iter = $.base.data('ow').num_resolutions;
 			}
 			else{
-				var iter = $.num_resolutions-1;
+				var iter = $.base.data('ow').num_resolutions-1;
 			}
-		  for( var i=$.res; i<iter; i++ ){
-		$.wid = Math.floor($.wid/2);
-		$.hei = Math.floor($.hei/2);
+		  for( var i=$.base.data('ow').res; i<iter; i++ ){
+		$.base.data('ow').wid = Math.floor($.base.data('ow').wid/2);
+		$.base.data('ow').hei = Math.floor($.base.data('ow').hei/2);
 		  }
 	
-		  $.rgn_x = $.rgn_x/2 - ($.rgn_w/4);
-		  if( $.rgn_x + $.rgn_w > $.wid ) $.rgn_x = $.wid - $.rgn_w;
-		  if( $.rgn_x < 0 ){
-		$.xfit=1;
-		$.rgn_x = 0;
+		  $.base.data('ow').rgn_x = $.base.data('ow').rgn_x/2 - ($.rgn_w/4);
+		  if( $.base.data('ow').rgn_x + $.rgn_w > $.base.data('ow').wid ) $.base.data('ow').rgn_x = $.base.data('ow').wid - $.rgn_w;
+		  if( $.base.data('ow').rgn_x < 0 ){
+		$.base.data('ow').xfit=1;
+		$.base.data('ow').rgn_x = 0;
 		  }
-		  else $.xfit = 0;
+		  else $.base.data('ow').xfit = 0;
 	
-		  $.rgn_y = $.rgn_y/2 - ($.rgn_h/4);
-		  if( $.rgn_y + $.rgn_h > $.hei ) $.rgn_y = $.hei - $.rgn_h;
-		  if( $.rgn_y < 0 ){
-		$.yfit=1;
-		$.rgn_y = 0;
+		  $.base.data('ow').rgn_y = $.base.data('ow').rgn_y/2 - ($.rgn_h/4);
+		  if( $.base.data('ow').rgn_y + $.rgn_h > $.base.data('ow').hei ) $.base.data('ow').rgn_y = $.base.data('ow').hei - $.rgn_h;
+		  if( $.base.data('ow').rgn_y < 0 ){
+		$.base.data('ow').yfit=1;
+		$.base.data('ow').rgn_y = 0;
 		  }
-		  else $.yfit = 0;
+		  else $.base.data('ow').yfit = 0;
 	
 		  $(this).requestImages();
 		  $(this).positionZone();
-		  //if( $.scale ) this.setScale();
+		  //if( $.base.data('ow').scale ) this.setScale();
 		}
     }
     
     $.fn.scroll = function(){
-    	var xmove =  - $($.source+" "+'div.target').position().left;
-    	console.debug($($.source+" "+'div.target').offset().left,$($.source+" "+'div.target').position().left);
-		var ymove =  - $($.source+" "+'div.target').position().top;
+    	var xmove =  - $($.base.data('ow').source+" "+'div.target').position().left;
+    	console.debug($($.base.data('ow').source+" "+'div.target').offset().left,$($.base.data('ow').source+" "+'div.target').position().left);
+		var ymove =  - $($.base.data('ow').source+" "+'div.target').position().top;
 		$(this).scrollTo( xmove, ymove );
     }
 	
 	$.fn.createWindows = function(){
 		console.info("createWindows called");
-		var winWidth = $($.source).width();
-		var winHeight = $($.source).height();
+		var winWidth = $($.base.data('ow').source).width();
+		var winHeight = $($.base.data('ow').source).height();
 		
 		// Calculate some sizes and create the navigation window
     	$(this).calculateMinSizes();
@@ -549,8 +552,9 @@
     	
     	// Create our main window target div, add our events and inject inside the frame
     	var el = $('<div></div>').addClass("target").css("cursor","move");
-    	$($.source).append(el);
-		$($.source+" "+'div.target').draggable({scroll:true
+    	$($.base.data('ow').source).append(el);
+    	console.info($.base);
+		$($.base.data('ow').source+" "+'div.target').draggable({scroll:true
 									,stop: function(event, ui) {
 											$(this).scroll();
 											return;
@@ -560,20 +564,20 @@
 									}
 								});
 							
-		$($.source+" "+'div.target').bind("drag",function(event,ui) {
+		$($.base.data('ow').source+" "+'div.target').bind("drag",function(event,ui) {
   							//event.preventDefault();
   							console.log(ui.position);
   							var top = ui.position.top;
   							var left = ui.position.left;
   							var out;
   							// check X
-  							if( $.rgn_x - left < 0 ){
-							   ui.position.left = $.rgn_x;
+  							if( $.base.data('ow').rgn_x - left < 0 ){
+							   ui.position.left = $.base.data('ow').rgn_x;
 							   out = true;
 							 }
-							 if( $.wid > $.rgn_w ){
-							   if( $.rgn_x - left > $.wid - $.rgn_w ){
-								 ui.position.left = -($.wid - $.rgn_w - $.rgn_x);
+							 if( $.base.data('ow').wid > $.rgn_w ){
+							   if( $.base.data('ow').rgn_x - left > $.base.data('ow').wid - $.rgn_w ){
+								 ui.position.left = -($.base.data('ow').wid - $.rgn_w - $.base.data('ow').rgn_x);
 								 out = true;
 							   }
 							 }
@@ -583,13 +587,13 @@
 							 }
   							
   							//check Y
-  							if( ($.rgn_y - ui.position.top) < 0 ){
-							   ui.position.top = $.rgn_y;
+  							if( ($.base.data('ow').rgn_y - ui.position.top) < 0 ){
+							   ui.position.top = $.base.data('ow').rgn_y;
 							   out = true;
 							 }
-							 if( $.hei > $.rgn_h ){
-							   if( $.rgn_y - ui.position.top > $.hei - $.rgn_h ){
-								 ui.position.top = -($.hei - $.rgn_h - $.rgn_y);
+							 if( $.base.data('ow').hei > $.rgn_h ){
+							   if( $.base.data('ow').rgn_y - ui.position.top > $.base.data('ow').hei - $.rgn_h ){
+								 ui.position.top = -($.base.data('ow').hei - $.rgn_h - $.base.data('ow').rgn_y);
 								 out = true;
 							   }
 							 }
@@ -600,7 +604,7 @@
 						}
 						
   					);
-		$($.source+" "+'div.target').bind('mousewheel', $(this).zoom);
+		$($.base.data('ow').source+" "+'div.target').bind('mousewheel', $(this).zoom);
 		$.rgn_w = winWidth;
     	$.rgn_h = winHeight;
     	
@@ -624,27 +628,27 @@
 	$.fn.positionZone = function(){
    		console.log("called positionZone");
    		
-   		var pleft = ($.rgn_x/$.wid) * ($.min_x);
-		if( pleft > $.min_x ) pleft = $.min_x;
+   		var pleft = ($.base.data('ow').rgn_x/$.base.data('ow').wid) * ($.base.data('ow').min_x);
+		if( pleft > $.base.data('ow').min_x ) pleft = $.base.data('ow').min_x;
 		if( pleft < 0 ) pleft = 0;
 	
-		var ptop = ($.rgn_y/$.hei) * ($.min_y);
-		if( ptop > $.min_y ) ptop = $.min_y;
+		var ptop = ($.base.data('ow').rgn_y/$.base.data('ow').hei) * ($.base.data('ow').min_y);
+		if( ptop > $.base.data('ow').min_y ) ptop = $.base.data('ow').min_y;
 		if( ptop < 0 ) ptop = 0;
 	
-		var width = ($.rgn_w/$.wid) * ($.min_x);
-		if( pleft+width > $.min_x ) width = $.min_x - pleft;
+		var width = ($.rgn_w/$.base.data('ow').wid) * ($.base.data('ow').min_x);
+		if( pleft+width > $.base.data('ow').min_x ) width = $.base.data('ow').min_x - pleft;
 	
-		var height = ($.rgn_h/$.hei) * ($.min_y);
-		if( height+ptop > $.min_y ) height = $.min_y - ptop;
+		var height = ($.rgn_h/$.base.data('ow').hei) * ($.base.data('ow').min_y);
+		if( height+ptop > $.base.data('ow').min_y ) height = $.base.data('ow').min_y - ptop;
 	
-		if( width < $.min_x ) $.xfit = 0;
-		else $.xfit = 1;
-		if( height < $.min_y ) $.yfit = 0;
-		else $.yfit = 1;
-		if($.showNavigation){
-			var border = $($.source+" "+'div.zone')[0].offsetHeight - $($.source+" "+'div.zone')[0].clientHeight;
-			$($.source+" "+'div.zone').animate({
+		if( width < $.base.data('ow').min_x ) $.base.data('ow').xfit = 0;
+		else $.base.data('ow').xfit = 1;
+		if( height < $.base.data('ow').min_y ) $.base.data('ow').yfit = 0;
+		else $.base.data('ow').yfit = 1;
+		if($.base.data('ow').showNavigation){
+			var border = $($.base.data('ow').source+" "+'div.zone')[0].offsetHeight - $($.base.data('ow').source+" "+'div.zone')[0].clientHeight;
+			$($.base.data('ow').source+" "+'div.zone').animate({
 								"left":pleft,
 								"top":ptop,
 								"width": width - border/2,
@@ -656,39 +660,39 @@
 	/* 
    	*/
 	$.fn.loadGrid = function(){
-   		console.log("rgn_x",$.rgn_x);
+   		console.log("rgn_x",$.base.data('ow').rgn_x);
    		
-   		 //var pos = $($.source).getPosition();
+   		 //var pos = $($.base.data('ow').source).getPosition();
 
 		// Delete our old image mosaic
-		$($.source+" "+'div.target').children().remove();
-		$($.source+" "+'div.target').css("left",0).css("top",0);
+		$($.base.data('ow').source+" "+'div.target').children().remove();
+		$($.base.data('ow').source+" "+'div.target').css("left",0).css("top",0);
 		
 		// Get the start points for our tiles
-	   var startx = Math.floor( $.rgn_x / $.tileSize[0] );
-	   var starty = Math.floor( $.rgn_y / $.tileSize[1] );
+	   var startx = Math.floor( $.base.data('ow').rgn_x / $.base.data('ow').tileSize[0] );
+	   var starty = Math.floor( $.base.data('ow').rgn_y / $.base.data('ow').tileSize[1] );
    	
 	  // If our size is smaller than the display window, only get these tiles!
 	  var len = $.rgn_w;
-	  if( $.wid < $.rgn_w ) len = $.wid;
-	  var endx =  Math.floor( (len + $.rgn_x) / $.tileSize[0]);
+	  if( $.base.data('ow').wid < $.rgn_w ) len = $.base.data('ow').wid;
+	  var endx =  Math.floor( (len + $.base.data('ow').rgn_x) / $.base.data('ow').tileSize[0]);
 	  
 	  len = $.rgn_h;
-	  if( $.hei < $.rgn_h ) len = $.hei;
-	  var endy = Math.floor( (len + $.rgn_y) / $.tileSize[1]);
+	  if( $.base.data('ow').hei < $.rgn_h ) len = $.base.data('ow').hei;
+	  var endy = Math.floor( (len + $.base.data('ow').rgn_y) / $.base.data('ow').tileSize[1]);
 	  
 	  // Number of tiles is dependent on view width and height
-	  var xtiles = Math.ceil($.wid / $.tileSize[0]);
-	  var ytiles = Math.ceil($.hei / $.tileSize[1]);
+	  var xtiles = Math.ceil($.base.data('ow').wid / $.base.data('ow').tileSize[0]);
+	  var ytiles = Math.ceil($.base.data('ow').hei / $.base.data('ow').tileSize[1]);
 	  
 	  /* Calculate the offset from the tile top left that we want to display.
        Also Center the image if our viewable image is smaller than the window
 	  */
-	  var xoffset = Math.floor($.rgn_x % $.tileSize[0]);
-	  if( $.wid < $.rgn_w ) xoffset -=  ($.rgn_w - $.wid)/2;
+	  var xoffset = Math.floor($.base.data('ow').rgn_x % $.base.data('ow').tileSize[0]);
+	  if( $.base.data('ow').wid < $.rgn_w ) xoffset -=  ($.rgn_w - $.base.data('ow').wid)/2;
   
-	  var yoffset = Math.floor($.rgn_y % $.tileSize[1]);
-	  if( $.hei < $.rgn_h ) yoffset -= ($.rgn_h - $.hei)/2;
+	  var yoffset = Math.floor($.base.data('ow').rgn_y % $.base.data('ow').tileSize[1]);
+	  if( $.base.data('ow').hei < $.rgn_h ) yoffset -= ($.rgn_h - $.base.data('ow').hei)/2;
 	  
 	  //console.log("offset x %d and offset y %d",xoffset,yoffset);
 	  //console.log("xtiles %d and ytiles %d",xtiles,ytiles);
@@ -710,7 +714,7 @@
 		for (i=startx;i<=endx; i++) {
   
 			map[ntiles] = {};
-			if( $.render == 'spiral' ){
+			if( $.base.data('ow').render == 'spiral' ){
 			  // Calculate the distance from the centre of the image
 			  map[ntiles].n = Math.abs(centery-j)* Math.abs(centery-j) + Math.abs(centerx-i)*Math.abs(centerx-i);
 			}
@@ -725,17 +729,17 @@
 	  
 	  //console.log(map);
 	  
-	  $.nTilesLoaded = 0;
-	  $.nTilesToLoad = ntiles*$.images.length;
+	  $.base.data('ow').nTilesLoaded = 0;
+	  $.base.data('ow').nTilesToLoad = ntiles*$.base.data('ow').images.length;
 	  
-	  if($.fileFormat == "iip")
+	  if($.base.data('ow').fileFormat == "iip")
 	  		map.sort(function s(a,b){return a.n - b.n;});
-	  else if($.fileFormat == "djatoka"){
+	  else if($.base.data('ow').fileFormat == "djatoka"){
 			 // djatoka mods 
 			 map.sort(function (a,b){return a > b;});
 			 var first = true;
-			 var r = $.num_resolutions - $.res;
-			 var f = $(this).getMultiplier(r, $.tileSize[0]);
+			 var r = $.base.data('ow').num_resolutions - $.base.data('ow').res;
+			 var f = $(this).getMultiplier(r, $.base.data('ow').tileSize[0]);
 			 // end djatoka mods
 
 	  }
@@ -746,9 +750,9 @@
   
 		// Sequential index of the tile in the tif image
 		// this variable needs to be changed for zoomify support
-		if($.fileFormat == "iip")
+		if($.base.data('ow').fileFormat == "iip")
 			k = i + (j*xtiles);
-		else if($.fileFormat == "djatoka"){
+		else if($.base.data('ow').fileFormat == "djatoka"){
 			// djatoka mods 
 			var djatoka_x = i * f;
 			var djatoka_y = j * f;
@@ -768,61 +772,61 @@
   
 		// Iterate over the number of layers we have
 		var n;
-		if($.fileFormat == "iip"||$.fileFormat == "zoomify"){
-			 for(n=0;n<$.images.length;n++){
-			   if($.fileFormat == "iip")
-				 tile = $("<img />").attr("class",'layer'+n).css("left",(i-startx)*$.tileSize[0] - xoffset).css("top",(j-starty)*$.tileSize[1] - yoffset);
+		if($.base.data('ow').fileFormat == "iip"||$.base.data('ow').fileFormat == "zoomify"){
+			 for(n=0;n<$.base.data('ow').images.length;n++){
+			   if($.base.data('ow').fileFormat == "iip")
+				 tile = $("<img />").attr("class",'layer'+n).css("left",(i-startx)*$.base.data('ow').tileSize[0] - xoffset).css("top",(j-starty)*$.base.data('ow').tileSize[1] - yoffset);
 			   else{
 				 // TODO fix here
-				 tile = $("<img />").attr("class",'layer'+n).css("left",(i-startx)*$.tileSize[0] - xoffset).css("top",(j-starty)*$.tileSize[1] - yoffset);
+				 tile = $("<img />").attr("class",'layer'+n).css("left",(i-startx)*$.base.data('ow').tileSize[0] - xoffset).css("top",(j-starty)*$.base.data('ow').tileSize[1] - yoffset);
 				 }
-			   tile.bind("load",function(){$.nTilesLoaded++;$(this).refreshLoadBar();})			
+			   tile.bind("load",function(){$.base.data('ow').nTilesLoaded++;$(this).refreshLoadBar();})			
 			   tile.bind("error",function(){return;})
 	   
 		   // We set the source at the end so that the 'load' function is properly fired
 			   var src = "";
-			   if($.fileFormat == "iip")
-				 src = $.server+"?FIF="+$.images[n].src+"&cnt="+$.contrast+"&sds="+$.images[n].sds+"&jtl="+$.res+"," + k;
+			   if($.base.data('ow').fileFormat == "iip")
+				 src = $.base.data('ow').server+"?FIF="+$.base.data('ow').images[n].src+"&cnt="+$.contrast+"&sds="+$.base.data('ow').images[n].sds+"&jtl="+$.base.data('ow').res+"," + k;
 			   else{
-				 var tileIndex = i + j * $.tierSizeInTiles[$.res][0] + $.tileCountUpToTier[$.res];
+				 var tileIndex = i + j * $.base.data('ow').tierSizeInTiles[$.base.data('ow').res][0] + $.base.data('ow').tileCountUpToTier[$.base.data('ow').res];
 				 tileIndex=parseInt(tileIndex/256);
 				 
 				 
-				 src = $.server+"/"+$.images[n].src +"/"+"TileGroup"+tileIndex+"/"+$.res+"-"+i+"-"+j+".jpg";
+				 src = $.base.data('ow').server+"/"+$.base.data('ow').images[n].src +"/"+"TileGroup"+tileIndex+"/"+$.base.data('ow').res+"-"+i+"-"+j+".jpg";
 				 }
 			   tile.attr( 'src', src );
-			   $($.source+" "+'div.target').append(tile);
+			   $($.base.data('ow').source+" "+'div.target').append(tile);
 			 }
 			 
 		   }
-	  else if($.fileFormat == "djatoka"){
-		   if (djatoka_x < $.max_width && djatoka_y < $.max_height) {
-			for(n=0;n<$.images.length;n++){
+	  else if($.base.data('ow').fileFormat == "djatoka"){
+		   if (djatoka_x < $.base.data('ow').max_width && djatoka_y < $.base.data('ow').max_height) {
+			for(n=0;n<$.base.data('ow').images.length;n++){
 	  
-			 tile = $("<img />").attr("class",'layer'+n).css("left",(i-startx)*$.tileSize[0] - xoffset).css("top",(j-starty)*$.tileSize[1] - yoffset);
-	  		 tile.bind("load",function(){$.nTilesLoaded++;$(this).refreshLoadBar();})	
+			 tile = $("<img />").attr("class",'layer'+n).css("left",(i-startx)*$.base.data('ow').tileSize[0] - xoffset).css("top",(j-starty)*$.base.data('ow').tileSize[1] - yoffset);
+	  		 tile.bind("load",function(){$.base.data('ow').nTilesLoaded++;$(this).refreshLoadBar();})	
 			 tile.bind("error",function(){})
 			 
 			 // djatoka mods
-			 var src = $.server + "?url_ver=Z39.88-2004&rft_id="
-					 + $.images[n].src + "&svc_id=" + $.svc_id
+			 var src = $.base.data('ow').server + "?url_ver=Z39.88-2004&rft_id="
+					 + $.base.data('ow').images[n].src + "&svc_id=" + $.svc_id
 					 + "&svc_val_fmt=" + $.svc_val_fmt
 					 + "&svc.format=image/jpeg&svc.level="
-					 + $.res + "&svc.rotate=0&svc.region="
+					 + $.base.data('ow').res + "&svc.rotate=0&svc.region="
 					 + djatoka_y + "," + djatoka_x + ",256,256";
 			 // end djatoka mods
 			 
 			 // We set the source at the end so that the 'load' function is properly fired
 			 //var src = this.server+"?FIF="+this.images[n].src+"&cnt="+this.contrast+"&sds="+this.images[n].sds+"&jtl="+this.res+"," + k;
 			 tile.attr( 'src', src );
-			 $($.source+" "+'div.target').append(tile);
+			 $($.base.data('ow').source+" "+'div.target').append(tile);
 		   }
 		  } else 
-			  $.nTilesLoaded++;
+			  $.base.data('ow').nTilesLoaded++;
 		 }
 	  }
   		/*
-	  if($.images.length > 1 ){
+	  if($.base.data('ow').images.length > 1 ){
 		var selector = 'img.layer'+(n-1);
 		$$(selector).set( 'opacity', this.opacity );
 	  }
@@ -835,7 +839,7 @@
 	$.fn.requestImages = function(){
    		// bypassed the refresher for the time being
 		// Set our cursor
-		$($.source+" "+'div.target').css( 'cursor', 'wait' );
+		$($.base.data('ow').source+" "+'div.target').css( 'cursor', 'wait' );
 		// Load our image mosaic
 		$(this).loadGrid();
 		// bypassed the refresher for the time being
@@ -851,15 +855,15 @@
 	
 	$.fn.setOpenURL=function() {
 	    var w = $.rgn_w;
-	    if ($.wid < $.rgn_w)
-	        w = $.wid;
+	    if ($.base.data('ow').wid < $.rgn_w)
+	        w = $.base.data('ow').wid;
 	    var h = $.rgn_h;
-	    if ($.hei < $.rgn_h)
-	    h = $.hei;
-	    $.openUrl = $.server + "?url_ver=Z39.88-2004&rft_id="
-	        + $.images[0].src + "&svc_id=" + $.svc_id + "&svc_val_fmt="
+	    if ($.base.data('ow').hei < $.rgn_h)
+	    h = $.base.data('ow').hei;
+	    $.openUrl = $.base.data('ow').server + "?url_ver=Z39.88-2004&rft_id="
+	        + $.base.data('ow').images[0].src + "&svc_id=" + $.svc_id + "&svc_val_fmt="
 	        + $.svc_val_fmt
-	        + "&svc.format=image/jpeg&svc.level=" + $.res
+	        + "&svc.format=image/jpeg&svc.level=" + $.base.data('ow').res
 	        + "&svc.rotate=0&svc.region=" + top_left_y + ","
 	        + top_left_x + "," + h + "," + w;
 	}
@@ -867,9 +871,9 @@
 	/* Recenter the image view
    	*/
 	$.fn.reCenter = function(){
-		$.rgn_x = ($.wid-$.rgn_w)/2;
-   		$.rgn_y = ($.hei-$.rgn_h)/2;
-   		console.log("called reCenter %d %d",$.rgn_x,$.rgn_y);
+		$.base.data('ow').rgn_x = ($.base.data('ow').wid-$.rgn_w)/2;
+   		$.base.data('ow').rgn_y = ($.base.data('ow').hei-$.rgn_h)/2;
+   		console.log("called reCenter %d %d",$.base.data('ow').rgn_x,$.base.data('ow').rgn_y);
 	}
 	
 	$.fn.log = function(msg){
@@ -895,6 +899,7 @@
 		}
 		return;
 	}
+	
 
 	$.fn.OmniViewer = function(options) {
 		var defaults = {
@@ -906,12 +911,13 @@
     	return this.each(function() {
     		var $this = $(this);
     		data = $this.data('ow');
+    		console.log($this);
     		if ( ! data) {
-			  $(this).data('ow', {
-				  target : $this,
-				  source:null
-			  });
-   
+			  $(this).data('ow', {});
+			  console.log("data not initialised");
+			}
+			else{
+				console.log("data initialised");
 			}
 			$(this).initialise(options);
 			return false;
