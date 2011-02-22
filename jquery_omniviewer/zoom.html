@@ -16,7 +16,8 @@
 
   <script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
   <script type="text/javascript" src="js/jquery-ui-1.8.5.custom.min.js"></script>
-  <script type="text/javascript" src="js/jquery.omniviewer.js"></script>
+  <!--<script type="text/javascript" src="js/jquery.omniviewer.js"></script>-->
+  <script type="text/javascript" src="js/jquery.omniviewer-wdgt.js"></script>
   <script type="text/javascript" src="ext-plugin/jquery.mousewheel.js"></script>
   <script type="text/javascript">
 
@@ -37,7 +38,22 @@
                 ,debug : true
                 ,fileFormat: "zoomify"
 				,mode : null
+				,ready:function(event,data){console.debug(data.self);}
 			});
+			
+			$("#ow_2").OmniViewer({
+				image: images
+				,server: server
+				,credit: credit
+				,zoom: 1
+				,render: 'random'
+                ,showNavButtons: true
+                ,showNavigation: false
+                ,debug : true
+                ,fileFormat:"zoomify"
+				,mode : null
+			});
+			
 		});	  
 	
   </script>
@@ -46,9 +62,8 @@
 
  <body>
  	<a href="">Previous page in source</a> <a href="">Next page in source</a>
-   <div style="width:99%;height:99%;margin-left:auto;margin-right:auto" id="ow_1">
-	
-   </div>
+   <div id="ow_1"></div>
+   <div id="ow_2"></div>
 
    
  </body>
