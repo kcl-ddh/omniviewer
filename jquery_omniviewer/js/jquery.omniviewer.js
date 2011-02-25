@@ -431,12 +431,12 @@
 		}
     }
 
-	$.fn.zoom=function(event, delta, deltaX, deltaY){
-		if(delta>0)
-			$(this).zoomIn();
-		else
-			$(this).zoomOut();
-	}
+_zoom=function(event, delta, deltaX, deltaY){
+	if(delta>0)
+		$(this).zoomIn();
+	else
+		$(this).zoomOut();
+}
     
     $.fn.zoomIn = function(){
     	$(this).trigger("zoomIn");

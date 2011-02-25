@@ -39,7 +39,7 @@
                 ,fileFormat: "zoomify"
 				,mode : null
 				,ready:function(event,data){console.debug(data.self);}
-			});
+			}).css("width","500px").css("height","500px");
 			
 			$("#ow_2").OmniViewer({
 				image: images
@@ -52,7 +52,7 @@
                 ,debug : true
                 ,fileFormat:"zoomify"
 				,mode : null
-			});
+			}).css("width","500px").css("height","500px");
 			
 		});	  
 	
@@ -64,8 +64,6 @@
  	<a href="">Previous page in source</a> <a href="">Next page in source</a>
    <div id="ow_1"></div>
    <div id="ow_2"></div>
-
-   
  </body>
 
 </html>
