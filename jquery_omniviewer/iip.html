@@ -13,10 +13,10 @@
 <link rel="stylesheet" type="text/css" media="all" href="css/omniviewer.css" />
   <link rel="shortcut icon" href="images/iip-favicon.png" />
   <title>jQuery OmniViewer 1.0-alpha [IIP image server]</title>
-
+	
   <script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
   <script type="text/javascript" src="js/jquery-ui-1.8.5.custom.min.js"></script>
-  <script type="text/javascript" src="js/jquery.omniviewer.js"></script>
+  <script type="text/javascript" src="js/jquery.omniviewer-wdgt.js"></script>
   <script type="text/javascript" src="ext-plugin/jquery.mousewheel.js"></script>
 
   <script type="text/javascript">
@@ -61,11 +61,11 @@
 				,render: "random"
                 ,showNavButtons: true
                 ,showNavigation: true
-                ,debug : true
+                ,debug : false
                 ,fileFormat: "iip"
 				,mode : "embedded"
 			});
-			$("#ow1").css("position","relative").css("width","300px").css("height","500px");		
+			$("#ow1").css("position","absolute").css("width","99%").css("height","99%");		
 			
 			
 		});	  
@@ -77,35 +77,9 @@
  <body>
  <div><a href="">Previous page in source</a> <a href="">Next page in source</a></div>
  
- <table border="1">
-<tr>
 <td><div id="ow1"></div></td>
 <td><div id="ow2"></div></td>
-</tr>
-</table>
-   
-   
-	<h4>© 2001 Canterbury Cathedral Archives, by kind permission of the Dean and Chapter of Canterbury</h4>
-	
-	<h3>Public Comments</h3>
-	<dl>
-		<dt></dt>
-		<dd></dd>
-	</dl>
-	
-	<h3>Private Note</h3>
-	
-	<dl>
-		<dt></dt>
-		<dd></dd>
-	</dl>
-	
-	
-	<h3>Transcriptions</h3>
-	<dl>
-		<dt></dt>
-		<dd></dd>
-	</dl>
+
 
  </body>
 
