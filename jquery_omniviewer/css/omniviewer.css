@@ -7,7 +7,7 @@
   margin: 0px;
   left: 0px;
   top: 0px;
-  background: black;
+  background: white;
   position: relative;
   overflow: hidden;
   padding: 0px;
@@ -180,3 +180,5 @@ div#credit {
 .navbuttons img.shiftDown { margin-top: 10px; }
 
 img#info, div.tip img, .navbuttons img { behavior: url(images/iepngfix.htc) } /*Fix IE PNG transparency */
+
+#mirror{margin:5px}

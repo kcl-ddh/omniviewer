@@ -9,10 +9,9 @@
   <meta name="description" content="IIPImage: High Resolution Remote Image Streaming Viewing"/>
   <meta name="copyright" content="&copy; 2003-2008 Ruven Pillay"/>
 
-    <!--<link rel="stylesheet" type="text/css" media="all" href="css/iip.css" />-->
-<link rel="stylesheet" type="text/css" media="all" href="css/omniviewer.css" />
+  <link rel="stylesheet" type="text/css" media="all" href="css/omniviewer.css" />
   <link rel="shortcut icon" href="images/iip-favicon.png" />
-  <title>jQuery OmniViewer 1.0-alpha [IIP image server]</title>
+  <title>jQuery OmniViewer 1.0-beta [IIP image server]</title>
 	
   <script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
   <script type="text/javascript" src="js/jquery-ui-1.8.5.custom.min.js"></script>
@@ -35,23 +34,6 @@
     var viewer = null;
 	var aviewer = null;
 		$(document).ready(function() {
-			$(window).bind('ui-ready',function(){
-			/*
-				$("#ow2").OmniViewer({
-				image: images
-				,server: server
-				,credit: credit
-				,zoom: 1
-				,render: "random"
-                ,showNavButtons: true
-                ,showNavigation: true
-                ,debug : true
-                ,fileFormat: "iip"
-				,mode : "embedded"
-			});
-			$("#ow2").css("position","relative").css("width","300px").css("height","500px");
-			*/
-			});
 			
 			viewer = $("#ow1").OmniViewer({
 				image: images

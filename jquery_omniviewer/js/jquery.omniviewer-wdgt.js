@@ -369,20 +369,22 @@ $.widget("cch.OmniViewer", {
     	// ADD EVENT BINDINGS TO NAV BUTTONS
     	$(this.source+' img.zoomIn').bind( 'click',{self:this}, function(e){e.data.self._zoomIn()});
 		$(this.source+' img.zoomOut').bind( 'click',{self:this}, function(e){e.data.self._zoomOut()});
-		$(this.source+' img.reset').bind( 'click', function(){
-			window.location=window.location; 
+		$(this.source+' img.reset').bind( 'click', {self:this},function(e){
+			e.data.self._reset();
 		});
-		$(this.source+' img.shiftLeft').bind( 'click', {x:-this.rgn_w/3,y:0,self:this},function(e){ 
-			e.data.self._scrollTo(e.data.x,e.data.y);
+		var val=-this.rgn_w/3;
+		
+		$(this.source+' img.shiftLeft').bind( 'click', {self:this},function(e){ 
+			e.data.self._scrollTo(-e.data.self.rgn_w/3,0);
 		});
-		$(this.source+' img.shiftUp').bind( 'click', {x:0,y:-this.rgn_h/3,self:this},function(e){
-			e.data.self._scrollTo(e.data.x,e.data.y);
+		$(this.source+' img.shiftUp').bind( 'click', {self:this},function(e){
+			e.data.self._scrollTo(0,-e.data.self.rgn_h/3);
 		});
-		$(this.source+' img.shiftDown').bind( 'click',{x:0,y:this.rgn_h/3,self:this}, function(e){
-			e.data.self._scrollTo(e.data.x,e.data.y);
+		$(this.source+' img.shiftDown').bind( 'click',{self:this}, function(e){
+			e.data.self._scrollTo(0,e.data.self.rgn_h/3);
 		});
 		$(this.source+' img.shiftRight').bind( 'click', {x:this.rgn_w/3,y:0,self:this},function(e){ 
-			e.data.self._scrollTo(e.data.x,e.data.y);
+			e.data.self._scrollTo(e.data.self.rgn_w/3,0);
 		});
 		
 		$(this.source+' img.navigation').bind('mousewheel',{self:this}, this._zoom);
@@ -474,6 +476,11 @@ $.widget("cch.OmniViewer", {
 		  //if( this.scale ) this.setScale();
 		}
 		return;
+	},
+	
+	_reset : function(){
+		this.destroy();
+		this._initialise();	
 	},
 	
 	_loadGrid : function(){
@@ -687,15 +694,23 @@ $.widget("cch.OmniViewer", {
 		this._info("Called getMultiplier but not implemented yet");
 	},
 	
-	// public methoda
+	// public methods
 	
 	scrollTo:function(dx,dy){
 		this._log("values %s, %s",dx,dy);
 		this._scrollTo(dx,dy);
 	},
 	
+	getZoomLevel:function(){
+		return this.res;
+	},
+	
 	zoomIn:function(){
 		this._zoomIn();
+	},
+	
+	reset:function(){
+		this._reset();
 	},
 	
 	zoomOut:function(){
@@ -703,7 +718,23 @@ $.widget("cch.OmniViewer", {
 	},
 	
 	_refreshLoadBar:function(){
-		this._info("Called refreshLoadBar but not implemented yet");
+		var w = (this.nTilesLoaded / this.nTilesToLoad) * this.min_x;
+	    $(this.source+" "+"div.loadBar").css( 'width', w );
+
+	    // Display the % in the progress bar
+	    $(this.source+" "+'div.loadBar').html('loading&nbsp;:&nbsp;'+Math.round(this.nTilesLoaded/this.nTilesToLoad*100) + '%' );
+		
+		$(this.source+" "+'div.loadBarContainer').fadeIn();
+	    if( $(this.source+" "+'div.loadBarContainer').css( 'opacity') != 0.85 ){
+	      $(this.source+" "+'div.loadBarContainer').css( 'opacity', 0.85 );
+	    }
+
+	    // If we're done with loading, fade out the load bar
+	    if( this.nTilesLoaded == this.nTilesToLoad ){
+	      // Fade out our progress bar and loading animation in a chain
+	      $(this.source+" "+'div.target').css( 'cursor', 'move' );
+	      $(this.source+" "+'div.loadBarContainer').fadeOut();
+	    }
 	},
 	
 	_checkBounds:function(dx,dy){
@@ -771,7 +802,7 @@ $.widget("cch.OmniViewer", {
 	_info:function(){
 		if(!(typeof console == 'undefined')){
 		var proxied = console.info;
-		if(this.debug)
+		if(this.debug && console)
 		 return proxied.apply(proxied, arguments);
 		}
 	},
@@ -874,6 +905,14 @@ $.widget("cch.OmniViewer", {
 		
 		this.element.addClass("targetframe");
 		this._load();
+	},
+	
+	destroy:function(){
+		$.Widget.prototype.destroy.apply(this, arguments); 
+		$(this.source+" > "+"div.target").remove();
+		$(this.source+" > "+"div.navcontainer").remove();
+		this.element.removeClass( "ow targetframe" );
+		
 	}
 });
 
