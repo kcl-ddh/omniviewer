@@ -307,8 +307,8 @@ $.widget("cch.OmniViewer", {
 				src =  this.server +"/"+ this.images[0].src+"/TileGroup"+0+"/0-0-0.jpg";
 			else if(this.fileFormat == "djatoka")
 				src =  this.server +  "?url_ver=Z39.88-2004&rft_id="
-				            + this.images[0].src + "&svc_id=" + $.svc_id
-				            + "&svc_val_fmt=" + $.svc_val_fmt
+				            + this.images[0].src + "&svc_id=" + this.svc_id
+				            + "&svc_val_fmt=" + this.svc_val_fmt
 				            + "&svc.format=image/jpeg&svc.scale=" + this.min_x + "," + this.min_y;
 			
 			var navimage = $('<img/>').addClass("navigation").attr("src",src);
