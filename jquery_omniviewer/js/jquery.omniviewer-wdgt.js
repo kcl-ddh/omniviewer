@@ -811,6 +811,21 @@ $.widget("cch.OmniViewer", {
 		 }
 	},
 	
+	_setOpenURL:function() {
+	    var w = this.rgn_w;
+	    if (this.wid < this.rgn_w)
+	        w = this.wid;
+	    var h = this.rgn_h;
+	    if (this.hei < this.rgn_h)
+	    h = this.hei;
+	    this.openUrl = this.server + "?url_ver=Z39.88-2004&rft_id="
+	        + this.images[0].src + "&svc_id=" + this.svc_id + "&svc_val_fmt="
+	        + this.svc_val_fmt
+	        + "&svc.format=image/jpeg&svc.level=" + this.res
+	        + "&svc.rotate=0&svc.region=" + top_left_y + ","
+	        + top_left_x + "," + h + "," + w;
+	},
+	
 	_info:function(){
 		if(!(typeof console == 'undefined')){
 		var proxied = console.info;
