@@ -100,10 +100,10 @@ $.widget("cch.OmniViewer", {
 		        this.tileSize[1] = 256;
 	            this.num_resolutions = parseInt(resp.levels);
 	            this.res = this.num_resolutions;
-				$(this).createWindows();
+				this._createWindows();
 			 },
 			 error:function(){
-				$(this).log_error("Unable to get image and tile sizes from server!");
+				console.error("Unable to get image and tile sizes from server!");
 			 },
 			});
 		}
@@ -690,8 +690,12 @@ $.widget("cch.OmniViewer", {
 		}
 	},
 	
-	_getMultiplier:function(){
-		this._info("Called getMultiplier but not implemented yet");
+	_getMultiplier:function(r,f){
+		var m = f;
+	    for (i = 0; i < r; i++) {
+	        m = m * 2;
+	    }
+	    return m;
 	},
 	
 	// public methods
@@ -792,6 +796,14 @@ $.widget("cch.OmniViewer", {
 	},
 	
 	_log:function(){
+		if(!(typeof console == 'undefined')){
+		var proxied = console.log;
+		if(this.debug && console)
+		 return proxied.apply(proxied, arguments);
+		 }
+	},
+	
+	_log_error:function(){
 		if(!(typeof console == 'undefined')){
 		var proxied = console.log;
 		if(this.debug && console)
