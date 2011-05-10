@@ -2,8 +2,8 @@ $.widget("cch.OmniViewer", {
 	options: {
         value: 0,
         debug: true,
-        // TODO initialise default values
-        
+        target_tmpl : $.template(null, "<div class=\"${className}\" style=\"cursor:move;\"></div>" ),
+        target_tmpl_data : [{className:"target"}],
     },
 
 	_create: function() {
@@ -11,10 +11,6 @@ $.widget("cch.OmniViewer", {
 	    this._initialise();
 	    this.element
             .addClass("ow");
-	},
-	
-	_initialiseZoomify: function(){
-		return;
 	},
 	
 	_load:function(){
@@ -121,11 +117,14 @@ $.widget("cch.OmniViewer", {
     	this._createNavigationWindow();
     	
     	// Create our main window target div, add our events and inject inside the frame
-    	var el = $('<div></div>').addClass("target").css("cursor","move");
+    	
+    	var el = $.tmpl( this.target_tmpl,this.target_tmpl_data);
+    	this.guiElements["target"] = el;
+    	this._info(this.guiElements["target"]);
     	this.element.append(el);
-    	this._info($(this.source+" "+'div.target'));
+    	this._info($(this.guiElements["target"]));
     	var self = this;
-		$(this.source+" "+'div.target').draggable({scroll:true
+		$(this.guiElements["target"]).draggable({scroll:true
 									,stop: function(event, ui) {
 											self._scroll();
 											return;
@@ -137,10 +136,11 @@ $.widget("cch.OmniViewer", {
 								
 		
 							
-		$(this.source+" "+'div.target').bind("drag",{self:this},function(event,ui) {
+		$(this.guiElements["target"]).bind("drag",{self:this},function(event,ui) {
   							$this = event.data.self;
   							var top = ui.position.top;
   							var left = ui.position.left;
+  							
   							var out;
   							// check X
   							if( $this.rgn_x - left < 0 ){
@@ -173,11 +173,13 @@ $.widget("cch.OmniViewer", {
 							   ui.position.top = 0;
 							   out = true;
 							 }
+							 //TBD
+							 self._trigger("pan", null,{absx:$this.rgn_x,absy:$this.rgn_y,dx:-ui.position.left,dy:-ui.position.top});
 						}
 						
   					);
   					
-		$(this.source+" "+'div.target').bind('mousewheel', this._zoom);
+		$(this.guiElements["target"]).bind('mousewheel', this._zoom);
 		this.rgn_w = winWidth;
     	this.rgn_h = winHeight;
     	
@@ -268,7 +270,7 @@ $.widget("cch.OmniViewer", {
 		  tx = parseInt(tx / 2);
 		  ty = parseInt(ty / 2);
 		  // Make sure we don't set our navigation image too small!
-		  if( --r == 1 ) break;
+		  if( --r == 0 ) break;
 		}
 		this.min_x = tx;
 		this.min_y = ty;
@@ -489,8 +491,8 @@ $.widget("cch.OmniViewer", {
    		 //var pos = $(this.source).getPosition();
 
 		// Delete our old image mosaic
-		$(this.source+" "+'div.target').children().remove();
-		$(this.source+" "+'div.target').css("left",0).css("top",0);
+		$(this.guiElements["target"]).children().remove();
+		$(this.guiElements["target"]).css("left",0).css("top",0);
 		
 		// Get the start points for our tiles
 	   var startx = Math.floor( this.rgn_x / this.tileSize[0] );
@@ -621,7 +623,7 @@ $.widget("cch.OmniViewer", {
 				 src = this.server+"/"+this.images[n].src +"/"+"TileGroup"+tileIndex+"/"+this.res+"-"+i+"-"+j+".jpg";
 				 }
 			   tile.attr( 'src', src );
-			   $(this.source+" "+'div.target').append(tile);
+			   $(this.guiElements["target"]).append(tile);
 			 }
 			 
 		   }
@@ -648,7 +650,7 @@ $.widget("cch.OmniViewer", {
 			 // We set the source at the end so that the 'load' function is properly fired
 			 //var src = this.server+"?FIF="+this.images[n].src+"&cnt="+this.contrast+"&sds="+this.images[n].sds+"&jtl="+this.res+"," + k;
 			 tile.attr( 'src', src );
-			 $(this.source+" "+'div.target').append(tile);
+			 $(this.guiElements["target"]).append(tile);
 		   }
 		  } else 
 			  this.nTilesLoaded++;
@@ -671,8 +673,8 @@ $.widget("cch.OmniViewer", {
 	},
 	
 	_scroll:function(){
-		var xmove =  - $(this.source+" "+'div.target').position().left;
-		var ymove =  - $(this.source+" "+'div.target').position().top;
+		var xmove =  - $(this.guiElements["target"]).position().left;
+		var ymove =  - $(this.guiElements["target"]).position().top;
 		this._log("ScrollTo: %i - %i",xmove,ymove);
 		this._scrollTo( xmove, ymove );
 	},
@@ -736,7 +738,7 @@ $.widget("cch.OmniViewer", {
 	    // If we're done with loading, fade out the load bar
 	    if( this.nTilesLoaded == this.nTilesToLoad ){
 	      // Fade out our progress bar and loading animation in a chain
-	      $(this.source+" "+'div.target').css( 'cursor', 'move' );
+	      $(this.guiElements["target"]).css( 'cursor', 'move' );
 	      $(this.source+" "+'div.loadBarContainer').fadeOut();
 	    }
 	},
@@ -757,7 +759,7 @@ $.widget("cch.OmniViewer", {
 	_requestImages : function(){
 		// bypassed the refresher for the time being
 		// Set our cursor
-		$(this.source+" "+'div.target').css( 'cursor', 'wait' );
+		$(this.guiElements["target"]).css( 'cursor', 'wait' );
 		// Load our image mosaic
 		this._loadGrid();
 		// bypassed the refresher for the time being
@@ -859,6 +861,10 @@ $.widget("cch.OmniViewer", {
 	
 	_initialise: function(){
 		this._info("Initialising Omniviewer at "+this.element.attr("id"));
+		/*
+		* the guiElem
+		*/
+		this.guiElements = {};
 		this.source = "#"+this.element.attr("id") ||  alert( 'No element ID given to IIP constructor' );
 		this.server = this.options.server || '/fcgi-bin/iipsrv.fcgi';
 		
@@ -931,12 +937,17 @@ $.widget("cch.OmniViewer", {
 		this.openUrl = "";
 		
 		this.element.addClass("targetframe");
+		
+		//Initialise templates
+		this.target_tmpl = this.options.target_tmpl;
+		this.target_tmpl_data = this.options.target_tmpl_data;
+		
 		this._load();
 	},
 	
 	destroy:function(){
 		$.Widget.prototype.destroy.apply(this, arguments); 
-		$(this.source+" > "+"div.target").remove();
+		this.guiElements["target"].remove();
 		$(this.source+" > "+"div.navcontainer").remove();
 		this.element.removeClass( "ow targetframe" );
 		
