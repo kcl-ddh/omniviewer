@@ -103,7 +103,7 @@ $.widget("cch.OmniViewer", {
 			 },
 			});
 		}
-		this._trigger("ready", null, { self:this});
+		
 		return;
 	},
 	
@@ -656,6 +656,7 @@ $.widget("cch.OmniViewer", {
 			  this.nTilesLoaded++;
 		 }
 	  }
+	  this._trigger("ready", null);
   		/*
   		* TODO
 	  if(this.images.length > 1 ){

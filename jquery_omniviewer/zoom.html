@@ -40,6 +40,7 @@
                 ,target_tmpl : $.template(null, "<div id=\"${id}\" class=\"${className}\" style=\"cursor:move;\"></div>" )
 				,target_tmpl_data : [{className:"target",id:"xyz"}]
 				,mode : null
+				,ready:function(event,data){console.warn("OW GUI loaded")}
 				,pan:function(event,data){
 						   console.warn("dx: %i,dy:%i,x:%s,y:%s",data.dx,data.dy,data.absx,data.absy);
 					   }
