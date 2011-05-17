@@ -4,6 +4,32 @@ $.widget("cch.OmniViewer", {
         debug: true,
         target_tmpl : $.template(null, "<div class=\"${className}\" style=\"cursor:move;\"></div>" ),
         target_tmpl_data : [{className:"target"}],
+
+        shiftLeftButton_tmpl :$.template(null, "<img class=\"${className}\" src=\"${imgPath}\"/>" ),
+        shiftLeftButton_tmpl_data : [{imgPath:'images/left.png',className:'shiftLeft'}],
+        
+        shiftRightButton_tmpl :$.template(null, "<img class=\"${className}\" src=\"${imgPath}\"/><br/>" ),
+        shiftRightButton_tmpl_data : [{imgPath:'images/right.png',className:'shiftRight'}],
+        
+        shiftUpButton_tmpl :$.template(null, "<img class=\"${className}\" src=\"${imgPath}\"/>" ),
+        shiftUpButton_tmpl_data : [{imgPath:'images/up.png',className:'shiftUp'}],
+        
+        shiftDownButton_tmpl :$.template(null, "<img class=\"${className}\" src=\"${imgPath}\"/><br/>" ),
+        shiftDownButton_tmpl_data : [{imgPath:'images/down.png',className:'shiftDown'}],
+        
+        //var zi = $('<img/>').addClass("zoomIn").attr("src","images/zoomIn.png");
+    	//var zo = $('<img/>').addClass("zoomOut").attr("src","images/zoomOut.png");
+    	//var re = $('<img/>').addClass("reset").attr("src","images/reset.png");
+    	
+    	zoomInButton_tmpl :$.template(null, "<img class=\"${className}\" src=\"${imgPath}\"/>" ),
+        zoomInButton_tmpl_data : [{imgPath:'images/zoomIn.png',className:'zoomIn'}],
+        
+        zoomOutButton_tmpl :$.template(null, "<img class=\"${className}\" src=\"${imgPath}\"/>" ),
+        zoomOutButton_tmpl_data : [{imgPath:'images/zoomOut.png',className:'zoomOut'}],
+        
+        resetButton_tmpl :$.template(null, "<img class=\"${className}\" src=\"${imgPath}\"/>" ),
+        resetButton_tmpl_data : [{imgPath:'images/reset.png',className:'reset'}],
+    	
     },
 
 	_create: function() {
@@ -173,13 +199,12 @@ $.widget("cch.OmniViewer", {
 							   ui.position.top = 0;
 							   out = true;
 							 }
-							 //TBD
 							 self._trigger("pan", null,{absx:$this.rgn_x,absy:$this.rgn_y,dx:-ui.position.left,dy:-ui.position.top});
 						}
 						
   					);
   					
-		$(this.guiElements["target"]).bind('mousewheel', this._zoom);
+		$(this.guiElements["target"]).bind('mousewheel', {self:this},function(e){e.data.self._log(e); e.data.self._zoom(e,e.wheelDelta)});
 		this.rgn_w = winWidth;
     	this.rgn_h = winHeight;
     	
@@ -329,20 +354,27 @@ $.widget("cch.OmniViewer", {
     	var loadBarContainer = $('<div></div>').addClass("loadBarContainer").css("width",this.min_x-2).css("height",10).append($('<div></div>').addClass("loadBar"));
     	
     	// Create our nav buttons
-    	
-    	var sl = $('<img/>').addClass("shiftLeft").attr("src","images/left.png");
-    	var su = $('<img/>').addClass("shiftUp").attr("src","images/up.png");
-    	var sr = $('<img/>').addClass("shiftRight").attr("src","images/right.png");
+
+    	var sl = $.tmpl(this.shiftLeftButton_tmpl,this.shiftLeftButton_tmpl_data);
+    	this.guiElements["shiftLeft"]=sl;
+    	var sr = $.tmpl(this.shiftRightButton_tmpl,this.shiftRightButton_tmpl_data);
+    	this.guiElements["shiftRight"]=sr;
+    	var su = $.tmpl(this.shiftUpButton_tmpl,this.shiftUpButton_tmpl_data);
+    	this.guiElements["shiftUp"]=su;
     	var br1 = $('<br/>');
-    	var sd = $('<img/>').addClass("shiftDown").attr("src","images/down.png");
-    	var br2 = $('<br/>');
-    	var zi = $('<img/>').addClass("zoomIn").attr("src","images/zoomIn.png");
-    	var zo = $('<img/>').addClass("zoomOut").attr("src","images/zoomOut.png");
-    	var re = $('<img/>').addClass("reset").attr("src","images/reset.png");
+    	var sd = $.tmpl(this.shiftDownButton_tmpl,this.shiftDownButton_tmpl_data);
+    	this.guiElements["shiftDown"]=sd;
+    	
+    	var zi =$.tmpl(this.zoomInButton_tmpl,this.zoomInButton_tmpl_data);
+    	this.guiElements["zoomIn"]=zi;
+    	var zo = $.tmpl(this.zoomOutButton_tmpl,this.zoomOutButton_tmpl_data);
+    	this.guiElements["zoomOut"]=zo;
+    	var re = $.tmpl(this.resetButton_tmpl,this.resetButton_tmpl_data);
+    	this.guiElements["reset"]=re;
     	//var navbuttons = new Array();
     	//navbuttons = [sl,su,sr,sd,br1,zi,zo,re];
     	
-    	navbuttons = $("<div></div>").addClass("navbuttons").append(sl,su,sr,br1,sd,br2,zi,zo,re);
+    	navbuttons = $("<div></div>").addClass("navbuttons").append(sl,su,sr,sd,zi,zo,re);
     	navcontainer.append(navbuttons);
     	navcontainer.append(loadBarContainer);
     	// and then snap it into the page;	
@@ -369,29 +401,29 @@ $.widget("cch.OmniViewer", {
     	navcontainer.draggable( {containment:this.source, handle:"toolbar"} );
     	
     	// ADD EVENT BINDINGS TO NAV BUTTONS
-    	$(this.source+' img.zoomIn').bind( 'click',{self:this}, function(e){e.data.self._zoomIn()});
-		$(this.source+' img.zoomOut').bind( 'click',{self:this}, function(e){e.data.self._zoomOut()});
-		$(this.source+' img.reset').bind( 'click', {self:this},function(e){
+    	$(this.guiElements["zoomIn"]).bind( 'click',{self:this}, function(e){e.data.self._zoomIn()});
+		$(this.guiElements["zoomOut"]).bind('click',{self:this}, function(e){e.data.self._zoomOut()});
+		$(this.guiElements["reset"]).bind( 'click', {self:this},function(e){
 			e.data.self._reset();
 		});
 		var val=-this.rgn_w/3;
 		
-		$(this.source+' img.shiftLeft').bind( 'click', {self:this},function(e){ 
+		$(this.guiElements["shiftLeft"] ).bind( 'click', {self:this},function(e){ 
 			e.data.self._scrollTo(-e.data.self.rgn_w/3,0);
 		});
-		$(this.source+' img.shiftUp').bind( 'click', {self:this},function(e){
+		$(this.guiElements["shiftUp"]).bind( 'click', {self:this},function(e){
 			e.data.self._scrollTo(0,-e.data.self.rgn_h/3);
 		});
-		$(this.source+' img.shiftDown').bind( 'click',{self:this}, function(e){
+		$(this.guiElements["shiftDown"]).bind( 'click',{self:this}, function(e){
 			e.data.self._scrollTo(0,e.data.self.rgn_h/3);
 		});
-		$(this.source+' img.shiftRight').bind( 'click', {x:this.rgn_w/3,y:0,self:this},function(e){ 
+		$(this.guiElements["shiftRight"] ).bind( 'click', {x:this.rgn_w/3,y:0,self:this},function(e){ 
 			e.data.self._scrollTo(e.data.self.rgn_w/3,0);
 		});
 		
-		$(this.source+' img.navigation').bind('mousewheel',{self:this}, this._zoom);
+		$(this.source+' img.navigation').bind('mousewheel',{self:this}, function(e){e.data.self._zoom(e,e.wheelDelta)});
 		
-		$(this.source+" "+'div.zone').bind('mousewheel',{self:this}, this._zoom);
+		$(this.source+" "+'div.zone').bind('mousewheel',{self:this}, function(e){e.data.self._zoom(e,e.wheelDelta)});
 		
 		// TODO for the time being I leave behind minor events bound to #zone.click
 	},
@@ -667,6 +699,9 @@ $.widget("cch.OmniViewer", {
 	},
 	
 	_zoom:function(event, delta, deltaX, deltaY){
+		// This does the trick for the crossbrowser scrolling using the mouse wheel
+		var wheelDelta = (event.wheelDelta)?event.wheelDelta*((!!window.opera)?-1:1) : event.detail*-1;
+		delta = wheelDelta;
 		if(delta>0)
 			this._zoomIn();
 		else
@@ -940,9 +975,30 @@ $.widget("cch.OmniViewer", {
 		this.element.addClass("targetframe");
 		
 		//Initialise templates
+		// Target
 		this.target_tmpl = this.options.target_tmpl;
 		this.target_tmpl_data = this.options.target_tmpl_data;
-		
+		// Shift Left Button
+		this.shiftLeftButton_tmpl = this.options.shiftLeftButton_tmpl;
+		this.shiftLeftButton_tmpl_data = this.options.shiftLeftButton_tmpl_data;
+		// Shift Right Button
+		this.shiftRightButton_tmpl = this.options.shiftRightButton_tmpl;
+		this.shiftRightButton_tmpl_data = this.options.shiftRightButton_tmpl_data;
+		// Shift Up Button
+		this.shiftUpButton_tmpl = this.options.shiftUpButton_tmpl;
+		this.shiftUpButton_tmpl_data = this.options.shiftUpButton_tmpl_data;
+		// Shift Down Button
+		this.shiftDownButton_tmpl = this.options.shiftDownButton_tmpl;
+		this.shiftDownButton_tmpl_data = this.options.shiftDownButton_tmpl_data;
+		// Zoom In Button
+		this.zoomInButton_tmpl = this.options.zoomInButton_tmpl;
+		this.zoomInButton_tmpl_data = this.options.zoomInButton_tmpl_data;
+		// Zoom Out Button
+		this.zoomOutButton_tmpl = this.options.zoomOutButton_tmpl;
+		this.zoomOutButton_tmpl_data = this.options.zoomOutButton_tmpl_data;
+		// Reset Button
+		this.resetButton_tmpl = this.options.resetButton_tmpl;
+		this.resetButton_tmpl_data = this.options.resetButton_tmpl_data;
 		this._load();
 	},
 	

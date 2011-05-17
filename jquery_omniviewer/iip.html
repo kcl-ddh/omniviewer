@@ -44,11 +44,16 @@
 				,render: "random"
                 ,showNavButtons: true
                 ,showNavigation: true
-                ,debug : false
+                ,debug : true
+                ,shiftLeftButton_tmpl :$.template(null, "<img title=\"Shift Left Button\" class=\"${className}\" src=\"${imgPath}\"/>" )
+                ,shiftRightButton_tmpl :$.template(null, "<img title=\"Shift Right Button\" class=\"${className}\" src=\"${imgPath}\"/><br />" )
+                ,shiftUpButton_tmpl :$.template(null, "<img title=\"Shift Up Button\" class=\"${className}\" src=\"${imgPath}\"/>" )
+                ,shiftDownButton_tmpl :$.template(null, "<img title=\"Shift Down Button\" class=\"${className}\" src=\"${imgPath}\"/><br />" )
+                ,shiftUpButton_tmpl_data :[{imgPath:'images/up.png',className:'shiftUp'}]
                 ,fileFormat: "iip"
 				,mode : "embedded"
 			});
-			$("#ow1").css("position","absolute").css("width","99%").css("height","99%");		
+			$("#ow1").css("position","absolute").css("width","600px").css("height","800px");		
 			
 			
 		});	  
