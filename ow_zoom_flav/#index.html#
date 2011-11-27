@@ -1,0 +1,164 @@
+
+œóòß<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" >
+
+ <head>
+  <meta name="author" content="Ruven Pillay &lt;ruven@users.sourceforge.netm&gt;"/>
+  <meta name="keywords" content="IIPImage Ajax Internet Imaging Protocol IIP Zooming Streaming High Resolution Mootools"/>
+  <meta name="description" content="IIPImage: High Resolution Remote Image Streaming Viewing"/>
+  <meta name="copyright" content="&copy; 2003-2008 Ruven Pillay"/>
+
+  <!--<link rel="stylesheet" type="text/css" media="all" href="css/iip.css" />-->
+<link rel="stylesheet" type="text/css" media="all" href="css/omniviewer.css" />
+  <link rel="shortcut icon" href="images/iip-favicon.png" />
+  <title>jQuery OmniViewer 1.0-beta [pre-zoomified image]</title>
+
+  <script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
+  <script type="text/javascript" src="js/jquery-ui-1.8.5.custom.min.js"></script>
+  <!--<script type="text/javascript" src="js/jquery.omniviewer.js"></script>-->
+  <script type="text/javascript" src="js/jquery.omniviewer-wdgt.js"></script>
+  <script type="text/javascript" src="ext-plugin/jquery.mousewheel.js"></script>
+  <script type="text/javascript">
+
+
+    var server = 'http://www.mr56k.info/ow/ow_zoom_flav';
+    var images = ['GB-CA_Add.128_8_r'];
+    var credit = '&copy; CCH';
+    var ow1 = null;
+		
+		$(document).ready(function() {
+			ow1 = $("#ow_1").OmniViewer({
+				image: ['/var/www/ow/ow_iip_flav/cch_image.tif']
+				,server: '/cgi-bin/iipsrv.fcgi'
+				,credit: credit
+				,zoom: 1
+				,render: 'random'
+                ,showNavButtons: true
+                ,showNavigation: true
+                ,debug : false
+                ,fileFormat: "iip"
+				,mode : null
+			}).css("width","400px").css("height","500px").css("float","left").css("margin-right","50px");
+			
+			$("#ow_2").OmniViewer({
+				image: ['/var/www/ow/ow_iip_flav/cch_image.tif']
+				,server: '/cgi-bin/iipsrv.fcgi'
+				,credit: credit
+				,zoom: 1
+				,render: 'random'
+                ,showNavButtons: true
+                ,showNavigation: true
+                ,debug : false
+                ,fileFormat:"iip"
+				,mode : null
+			}).css("width","400px").css("height","500px").css("float","left").css("margin-right","50px");
+			
+			$('#destroy_1').bind("click",function(){
+				$("#ow_1").OmniViewer("destroy");
+			});
+			
+			$('#destroy_2').bind("click",function(){
+				$("#ow_2").OmniViewer("destroy");
+			});
+			
+			$('#mirror').bind("click",function(){
+				var status = $(this).data('mirror');
+				// do stuff
+				
+				if(typeof status == 'undefined'){
+					$(this).text('Unsynch');
+					status = true;
+					alert($("#ow_1").OmniViewer("getZoomLevel")+" "+$("#ow_2").OmniViewer("getZoomLevel"));
+					$("#ow_2").OmniViewer({
+					   zoomIn:function(event,data){
+						   ow1.OmniViewer("zoomIn");
+					   }
+					   ,zoomOut:function(event,data){
+						   ow1.OmniViewer("zoomOut");
+					   }
+					   ,scrollTo:function(event,data){
+						   ow1.OmniViewer("scrollTo",data.dx,data.dy);
+					   }
+					});
+					}
+				else if(status){
+					status = false;
+					$(this).text('Synch');
+					$("#ow_2").OmniViewer({
+					   zoomIn:null
+					   ,zoomOut:null
+					   ,scrollTo:null
+					});
+					}
+				else if(!status){
+					status = true;
+					$(this).text('Unsynch');
+					alert($("#ow_1").OmniViewer("getZoomLevel")+" "+$("#ow_2").OmniViewer("getZoomLevel"));
+					$("#ow_2").OmniViewer({
+					   zoomIn:function(event,data){
+						   ow1.OmniViewer("zoomIn");
+					   }
+					   ,zoomOut:function(event,data){
+						   ow1.OmniViewer("zoomOut");
+					   }
+					   ,scrollTo:function(event,data){
+						   ow1.OmniViewer("scrollTo",data.dx,data.dy);
+					   }
+					});
+					}
+				$(this).data('mirror',status);
+			})
+			
+		});	  
+	
+  </script>
+
+ </head>
+
+ <body>
+ 	<h1>OmniViewer Demo</h1>
+ 	<div>
+ 	<div><a href="">Previous page in source</a> <a href="">Next page in source</a><button id="mirror">Synch</button></div>
+ 	<div>
+ 	<button id="destroy_1">Destroy OW1</button>
+ 	<div id="ow_1"></div>
+ 	</div>
+ 	<div>
+ 	<button id="destroy_2">Destroy OW2</button>
+   	<div id="ow_2"></div>
+   	
+   	</div>
+   	
+   	
+   	
+   <!--
+	<div style="margin-top:50px">
+   <h4>&copy;2001 copyright Canterbury Cathedral Archives, by kind permission of the Dean and Chapter of Canterbury</h4>
+	
+	<h3>Public Comments</h3>
+	<dl>
+		<dt></dt>
+		<dd></dd>
+	</dl>
+	
+	<h3>Private Note</h3>
+	
+	<dl>
+		<dt></dt>
+		<dd></dd>
+	</dl>
+	
+	
+	<h3>Transcriptions</h3>
+	<dl>
+		<dt></dt>
+		<dd></dd>
+	</dl>
+	</div>-->
+ 	</div>
+   
+
+ </body>
+
+</html>
