@@ -324,7 +324,7 @@ $.widget("cch.OmniViewer", {
     	navcontainer.append(toolbar);
     	if(this.showNavigation){
 			// Create our navigation div and inject it inside our frame
-			var navwin = $('<div></div>').addClass("navwin").css("width",this.min_x).css("height",this.min_y).css("position","relative");
+			var navwin = $('<div></div>').addClass("navwin").css("width",this.min_x).css("height",this.min_y).css("position","static");
 			navcontainer.append(navwin);
 			var src="";
 			// Create our navigation image and inject inside the div we just created

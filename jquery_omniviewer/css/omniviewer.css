@@ -29,6 +29,7 @@
 }
 .navwin {
   font-size: 90%;
+  position:static;
   left: 0px;
   font-weight: bold;
   text-align: left;
@@ -38,6 +39,8 @@
   z-index: 2;
   opacity: 0.9;
 }
+
+div.navwin{position: static;}
 
 .navwin img { border: 0px; }
 
@@ -158,7 +161,7 @@ div#credit {
 .navbuttons {
   font-size: 50%;
   line-height: 0px;
-  position: relative; /* Needed for bug in IE */
+  /*position: relative; /* Needed for bug in IE */
   background: #222222;
   opacity: 0.6;
   width: auto;
@@ -182,3 +185,7 @@ div#credit {
 img#info, div.tip img, .navbuttons img { behavior: url(images/iepngfix.htc) } /*Fix IE PNG transparency */
 
 #mirror{margin:5px}
+
+.viewport{
+	background-color:black;
+}

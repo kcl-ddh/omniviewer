@@ -28,15 +28,15 @@
 		
 		$(document).ready(function() {
 			ow1 = $("#ow_1").OmniViewer({
-				image: ['/var/www/ow/ow_iip_flav/cch_image.tif']
-				,server: '/cgi-bin/iipsrv.fcgi'
+				image: ['VF_0178']
+				,server: 'http://images.cch.kcl.ac.uk/dev/ow_zoom_flav'
 				,credit: credit
 				,zoom: 1
 				,render: 'random'
                 ,showNavButtons: true
                 ,showNavigation: true
                 ,debug : true
-                ,fileFormat: "iip"
+                ,fileFormat: "zoomify"
                 ,target_tmpl : $.template(null, "<div id=\"${id}\" class=\"${className}\" style=\"cursor:move;\"></div>" )
 				,target_tmpl_data : [{className:"target",id:"xyz"}]
 				,mode : null
@@ -44,77 +44,22 @@
 				,pan:function(event,data){
 						   console.warn("dx: %i,dy:%i,x:%s,y:%s",data.dx,data.dy,data.absx,data.absy);
 					   }
-			}).css("width","400px").css("height","500px").css("float","left").css("margin-right","50px");
-			
+			}).css("width","800px").css("height","800px").css("border","1px solid black");
+			/*
 			$("#ow_2").OmniViewer({
-				image: ['/var/www/ow/ow_iip_flav/cch_image.tif']
-				,server: '/cgi-bin/iipsrv.fcgi'
+				image: ['GB-CA_Add.128_8_r']
+				,server: 'http://images.cch.kcl.ac.uk/dev/ow_zoom_flav/'
 				,credit: credit
 				,zoom: 1
 				,render: 'random'
                 ,showNavButtons: true
                 ,showNavigation: true
                 ,debug : true
-                ,fileFormat:"iip"
+                ,fileFormat:"zoomify"
 				,mode : null
 			}).css("width","400px").css("height","500px").css("float","left").css("margin-right","50px");
 			
-			$('#destroy_1').bind("click",function(){
-				$("#ow_1").OmniViewer("destroy");
-			});
-			
-			$('#destroy_2').bind("click",function(){
-				$("#ow_2").OmniViewer("destroy");
-			});
-			
-			$('#mirror').bind("click",function(){
-				var status = $(this).data('mirror');
-				// do stuff
-				
-				if(typeof status == 'undefined'){
-					$(this).text('Unsynch');
-					status = true;
-					alert($("#ow_1").OmniViewer("getZoomLevel")+" "+$("#ow_2").OmniViewer("getZoomLevel"));
-					$("#ow_2").OmniViewer({
-					   zoomIn:function(event,data){
-						   ow1.OmniViewer("zoomIn");
-					   }
-					   ,zoomOut:function(event,data){
-						   ow1.OmniViewer("zoomOut");
-					   }
-					   ,scrollTo:function(event,data){
-						   ow1.OmniViewer("scrollTo",data.dx,data.dy);
-					   }
-					});
-					}
-				else if(status){
-					status = false;
-					$(this).text('Synch');
-					$("#ow_2").OmniViewer({
-					   zoomIn:null
-					   ,zoomOut:null
-					   ,scrollTo:null
-					});
-					}
-				else if(!status){
-					status = true;
-					$(this).text('Unsynch');
-					alert($("#ow_1").OmniViewer("getZoomLevel")+" "+$("#ow_2").OmniViewer("getZoomLevel"));
-					$("#ow_2").OmniViewer({
-					   zoomIn:function(event,data){
-						   ow1.OmniViewer("zoomIn");
-					   }
-					   ,zoomOut:function(event,data){
-						   ow1.OmniViewer("zoomOut");
-					   }
-					   ,scrollTo:function(event,data){
-						   ow1.OmniViewer("scrollTo",data.dx,data.dy);
-					   }
-					});
-					}
-				$(this).data('mirror',status);
-			})
-			
+			*/
 		});	  
 	
   </script>
@@ -122,15 +67,12 @@
  </head>
 
  <body>
- 	<h1>OmniViewer Demo</h1>
+ 	<h1>OmniViewer Demo &dash; Zoomify flavour</h1>
  	<div>
- 	<div><a href="">Previous page in source</a> <a href="">Next page in source</a><button id="mirror">Synch</button></div>
  	<div>
- 	<button id="destroy_1">Destroy OW1</button>
- 	<div id="ow_1"></div>
+ 	<div id="ow_1"class="viewport"></div>
  	</div>
  	<div>
- 	<button id="destroy_2">Destroy OW2</button>
    	<div id="ow_2"></div>
    	
    	</div>
