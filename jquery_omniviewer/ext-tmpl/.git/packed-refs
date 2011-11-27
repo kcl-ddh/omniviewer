@@ -1,0 +1,5 @@
+# pack-refs with: peeled 
+484cee912c94ff9bdad87027ac452335ab44dc57 refs/tags/vBeta1.0.0
+^e9c0d802049418ae88e578a9cb7ddc87d0d8fceb
+5ffd98011141b0df8f8f6f08abd50820e70e3125 refs/remotes/origin/master
+5ffd98011141b0df8f8f6f08abd50820e70e3125 refs/remotes/origin/gh-pages

@@ -1,7 +1,7 @@
 #^ow_zoom_flav$
 ^ow_iip_flav$
 ^ow_djat_flav$
-^jquery_omniviewer/ext-plugin$
-^jquery_omniviewer/ext-overscroll$
-^jquery_omniviewer/ext-tmpl$
+#^jquery_omniviewer/ext-plugin$
+#^jquery_omniviewer/ext-overscroll$
+#^jquery_omniviewer/ext-tmpl$
 ^.*.~$

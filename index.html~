@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" >
+
+ <head>
+  <meta name="author" content="Matteo Romanello &lt;matteo.romanello@gmail.com&gt;"/>
+  <!-- <meta name="keywords" content="IIPImage Ajax Internet Imaging Protocol IIP Zooming Streaming High Resolution Mootools"/>
+  <meta name="description" content="IIPImage: High Resolution Remote Image Streaming Viewing"/>
+  <meta name="copyright" content="&copy; 2003-2008 Ruven Pillay"/>-->
+
+  <title>jQuery OmniViewer Start Page</title>
+
+ </head>
+
+ <body>
+   <div>
+	<h1>jQuery OmniViewer</h1>
+	OmniViewer is a jQuery plugin developed by Matteo Romanello at the CCH(Centre for Computing in the Humanities), King&apos;s College London.
+	<h2>Getting Started</h2>
+	<p>This plugin comes in the following flavours:
+	<ul>
+		<li><a href="ow_zoom_flav/" target="_blank">Zoomify Flavour</a></li>
+		<li><a href="ow_iip_flav/" target="_blank">IIP Flavour</a></li>
+		<li><a href="ow_djat_flav/" target="_blank">Djatoka Flavour (Alpha)</a></li>
+	</ul>
+	</p>
+	<h2>Code</h2>
+	<p>See the <a href="https://www.assembla.com/spaces/jquery_omniviewer" target="_blank"  title="jQuery OmniViewer at assembla.com">code repository</a> hosted on assembla.com</p>
+   </div>
+ </body>
+
+</html>
