@@ -12,6 +12,7 @@
   overflow: hidden;
   padding: 0px;
   border: 2px insert grey;
+  background-color:black;
 }
 
 .navcontainer {
@@ -185,7 +186,3 @@ div#credit {
 img#info, div.tip img, .navbuttons img { behavior: url(images/iepngfix.htc) } /*Fix IE PNG transparency */
 
 #mirror{margin:5px}
-
-.viewport{
-	background-color:black;
-}

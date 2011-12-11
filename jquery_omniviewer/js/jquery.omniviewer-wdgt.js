@@ -143,7 +143,6 @@ $.widget("cch.OmniViewer", {
     	this._createNavigationWindow();
     	
     	// Create our main window target div, add our events and inject inside the frame
-    	
     	var el = $.tmpl( this.target_tmpl,this.target_tmpl_data);
     	this.guiElements["target"] = el;
     	this._info(this.guiElements["target"]);
@@ -716,7 +715,9 @@ $.widget("cch.OmniViewer", {
 	},
 	
 	_scrollTo:function(dx,dy){
-		this._log("called scroll navigation "+dx+" "+dy);
+		this.last_X = dx;
+		this.last_Y = dy;
+		this._info("called scroll navigation "+dx+" "+dy);
 		this._trigger("scrollTo", null,{dx:dx,dy:dy});
    		if( dx || dy ){
 		  // To avoid unnecessary redrawing ...
@@ -737,7 +738,6 @@ $.widget("cch.OmniViewer", {
 	},
 	
 	// public methods
-	
 	scrollTo:function(dx,dy){
 		this._log("values %s, %s",dx,dy);
 		this._scrollTo(dx,dy);
@@ -757,6 +757,10 @@ $.widget("cch.OmniViewer", {
 	
 	zoomOut:function(){
 		this._zoomOut();
+	},
+	
+	getLastXY:function(){
+		return new Array(this.rgn_x,this.rgn_y);
 	},
 	
 	_refreshLoadBar:function(){
@@ -891,7 +895,7 @@ $.widget("cch.OmniViewer", {
 	
 		this.rgn_x = Math.round(xmove * this.wid / this.min_x);
 		this.rgn_y = Math.round(ymove * this.hei / this.min_y);
-	 
+	 	this._trigger("scrollTo", null,{dx:this.rgn_x,dy:this.rgn_y});
 		this._requestImages();
 	},
 	
@@ -974,6 +978,9 @@ $.widget("cch.OmniViewer", {
 		
 		this.element.addClass("targetframe");
 		
+		this.last_X = 0;
+		this.last_Y = 0;
+		
 		//Initialise templates
 		// Target
 		this.target_tmpl = this.options.target_tmpl;
@@ -1007,7 +1014,11 @@ $.widget("cch.OmniViewer", {
 		this.guiElements["target"].remove();
 		$(this.source+" > "+"div.navcontainer").remove();
 		this.element.removeClass( "ow targetframe" );
-		
+		this.element.css("height","0");
+		this.element.css("width","0");
+	},
+	version: function(){
+		return "1.0.1";
 	}
 });
 
