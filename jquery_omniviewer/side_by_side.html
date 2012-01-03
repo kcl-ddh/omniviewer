@@ -23,6 +23,13 @@
   <script type="text/javascript" src="ext-syntaxhighlighter/scripts/shCore.js"></script>
   <script type="text/javascript" src="ext-syntaxhighlighter/scripts/shBrushJScript.js"></script>
   <link type="text/css" rel="stylesheet" href="ext-syntaxhighlighter/styles/shCoreDefault.css"/>
+  <style>
+  	div.step {
+    border: 1px solid black;
+    padding: 10px;
+    margin-top:5px;
+	}
+  </style>
 
 <script type="text/javascript">
     var server = 'http://www.mr56k.info/ow/ow_zoom_flav'; 
@@ -93,81 +100,80 @@
  </head>
 
  <body>
- 	<h1>OmniViewer Demo &dash; Zoomify flavour</h1>
- 	<div>
- 		<div>
-   	<h2>Tutorial</h2>
+ 	<h1>jQuery OmniViewer (Zoomify flavour)</h1>
+	<h2>Interactive Tutorial</h2>
    	
-   	<h3>To initialize an instance</h3>
-   	<pre class="brush: js">
-   		var ow1 = $("#ow_1").OmniViewer({
-				image: ['VF_0178']
-				,server: 'http://images.cch.kcl.ac.uk/dev/ow_zoom_flav'
-				,credit: credit
-				,zoom: 1
-				,render: 'random'
-                ,showNavButtons: true
-                ,showNavigation: true
-                ,debug : true
-                ,fileFormat: "zoomify"
-                ,target_tmpl : $.template(null, "<div id=\"${id}\" class=\"${className}\" style=\"cursor:move;\"></div>" )
-				,target_tmpl_data : [{className:"target",id:"xyz"}]
-				,mode : null
-				,scrollTo:function(event, data) {alert(data.dx+", "+data.dy);} 
-				,ready:function(event,data){console.warn("OW GUI loaded")}
-				,pan:function(event,data){
-						   console.warn("dx: %i,dy:%i,x:%s,y:%s",data.dx,data.dy,data.absx,data.absy);
-					   }
-				}).css("width","800px").css("height","800px").css("float","left").css("border","1px solid black").css("margin-right","100px");
-   	</pre>
-   	<span id="ex0">Click to execute example!</span>
-   	
-   	<h3>Get Version Information</h3>
-   	<p>To output the plugin version 
-   		<pre class="brush: js">alert(ow1.OmniViewer("version");)</pre>
-   		<span id="ex1">Click to execute example!</span>
-   	</p>
-   	
-   		<h3>To destroy the 1nd instance</h3>
-   	<pre class="brush: js">
-   		ow1.OmniViewer("destroy");
-   	</pre>
-   	<span id="ex4">Click to execute example!</span>
-   	
-   	<h3>To initialize another instance</h3>
-   	<pre class="brush: js">
-   		var ow2 = $("#ow_2").OmniViewer({
-				image: ['VF_0178']
-				,server: 'http://images.cch.kcl.ac.uk/dev/ow_zoom_flav'
-				,credit: credit
-				,zoom: 1
-				,render: 'random'
-                ,showNavButtons: true
-                ,showNavigation: true
-                ,debug : true
-                ,fileFormat:"zoomify"
-				,mode : null
-			}).css("width","800px").css("height","800px");
-   	</pre>
-   	<span id="ex2">Click to execute example!</span>
-   	
-   	
-   	<h3>To destroy the 2nd instance</h3>
-   	<pre class="brush: js">
-   		ow2.OmniViewer("destroy");
-   	</pre>
-   	<span id="ex3">Click to execute example!</span>
-   	
+   	<div id="steps">
+		<div class="step">
+		<h3>To initialize an instance</h3>
+		<pre class="brush: js">
+			var ow1 = $("#ow_1").OmniViewer({
+					image: ['VF_0178']
+					,server: 'http://images.cch.kcl.ac.uk/dev/ow_zoom_flav'
+					,credit: credit
+					,zoom: 1
+					,render: 'random'
+					,showNavButtons: true
+					,showNavigation: true
+					,debug : true
+					,fileFormat: "zoomify"
+					,target_tmpl : $.template(null, "<div id=\"${id}\" class=\"${className}\" style=\"cursor:move;\"></div>" )
+					,target_tmpl_data : [{className:"target",id:"xyz"}]
+					,mode : null
+					,scrollTo:function(event, data) {alert(data.dx+", "+data.dy);} 
+					,ready:function(event,data){console.warn("OW GUI loaded")}
+					,pan:function(event,data){
+							   console.warn("dx: %i,dy:%i,x:%s,y:%s",data.dx,data.dy,data.absx,data.absy);
+						   }
+					}).css("width","800px").css("height","800px").css("float","left").css("border","1px solid black").css("margin-right","100px");
+		</pre>
+		<span id="ex0">Click to execute example!</span>
+		</div>
+		
+		<div class="step">
+			<h3>Get Version Information</h3>
+			<p>To output the plugin version 
+				<pre class="brush: js">alert(ow1.OmniViewer("version");)</pre>
+				<span id="ex1">Click to execute example!</span>
+			</p>
+		</div>
+   		<div class="step">
+				<h3>To destroy the 1st instance</h3>
+			<pre class="brush: js">
+				ow1.OmniViewer("destroy");
+			</pre>
+			<span id="ex4">Click to execute example!</span>
+		</div>
+   		<div class="step">
+			<h3>To initialize another instance</h3>
+			<pre class="brush: js">
+				var ow2 = $("#ow_2").OmniViewer({
+						image: ['VF_0178']
+						,server: 'http://images.cch.kcl.ac.uk/dev/ow_zoom_flav'
+						,credit: credit
+						,zoom: 1
+						,render: 'random'
+						,showNavButtons: true
+						,showNavigation: true
+						,debug : true
+						,fileFormat:"zoomify"
+						,mode : null
+					}).css("width","800px").css("height","800px");
+			</pre>
+			<span id="ex2">Click to execute example!</span>
+   		</div>
+   		<div class="step">
+			<h3>To destroy the 2nd instance</h3>
+			<pre class="brush: js">
+				ow2.OmniViewer("destroy");
+			</pre>
+			<span id="ex3">Click to execute example!</span>
+		</div>   	
    	</div>
- 	<div>
- 	<div id="ow_1"></div>
- 	</div>
- 	<div>
-   	<div id="ow_2"></div>
-   	</div>
-
-   
-
+	<div id="viewports">
+		<div id="ow_1"></div>
+		<div id="ow_2"></div>
+	</div>
  </body>
 
 </html>

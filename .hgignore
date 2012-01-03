@@ -3,5 +3,6 @@
 ^ow_djat_flav$
 #^jquery_omniviewer/ext-plugin$
 #^jquery_omniviewer/ext-overscroll$
-#^jquery_omniviewer/ext-tmpl$
+^jquery_omniviewer/ext-syntaxhighlighter/*$
+^jquery_omniviewer/development-bundle/*$
 ^.*.~$

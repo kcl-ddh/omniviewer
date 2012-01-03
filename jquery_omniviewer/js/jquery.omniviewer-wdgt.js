@@ -1,4 +1,16 @@
+/**
+ * @fileOverview
+ * @author <a href="mailto:matteo.romanello@gmail.com">Matteo Romanello</a>
+ * @version 1.0.1
+ */
+
+(function($){
+    /** @name $.cch.OmniViewer
+     * @namespace OmniViewer widget
+     */
+$.OmniViewer = function(){};
 $.widget("cch.OmniViewer", {
+	/** @lends $.cch.OmniViewer.prototype */
 	options: {
         value: 0,
         debug: true,
@@ -31,7 +43,7 @@ $.widget("cch.OmniViewer", {
         resetButton_tmpl_data : [{imgPath:'images/reset.png',className:'reset'}],
     	
     },
-
+	
 	_create: function() {
 		this.debug = this.options.debug;
 	    this._initialise();
@@ -512,8 +524,8 @@ $.widget("cch.OmniViewer", {
 	},
 	
 	_reset : function(){
-		this.destroy();
-		this._initialise();	
+	    this.destroy();
+	    this._initialise();	
 	},
 	
 	_loadGrid : function(){
@@ -1008,7 +1020,7 @@ $.widget("cch.OmniViewer", {
 		this.resetButton_tmpl_data = this.options.resetButton_tmpl_data;
 		this._load();
 	},
-	
+	    /** destroy */
 	destroy:function(){
 		$.Widget.prototype.destroy.apply(this, arguments); 
 		this.guiElements["target"].remove();
@@ -1017,8 +1029,12 @@ $.widget("cch.OmniViewer", {
 		this.element.css("height","0");
 		this.element.css("width","0");
 	},
-	version: function(){
+	    /**
+	       Returns the current version
+	       @returns {String} the current version
+	     */
+	    version: function(){
 		return "1.0.1";
 	}
 });
-
+})(jQuery);
