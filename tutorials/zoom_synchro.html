@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" >
+
+ <head>
+  <meta name="author" content="Ruven Pillay &lt;ruven@users.sourceforge.netm&gt;"/>
+  <meta name="keywords" content="IIPImage Ajax Internet Imaging Protocol IIP Zooming Streaming High Resolution Mootools"/>
+  <meta name="description" content="IIPImage: High Resolution Remote Image Streaming Viewing"/>
+  <meta name="copyright" content="&copy; 2003-2008 Ruven Pillay"/>
+
+  <!--<link rel="stylesheet" type="text/css" media="all" href="css/iip.css" />-->
+<link rel="stylesheet" type="text/css" media="all" href="css/omniviewer.css" />
+  <link rel="shortcut icon" href="images/iip-favicon.png" />
+  <title>jQuery OmniViewer Tutorial == Get Started [Zoomify flavour]</title>
+
+  <script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
+  <script type="text/javascript" src="js/jquery-ui-1.8.5.custom.min.js"></script>
+  <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="ext-tmpl/jquery.tmpl.js"></script>
+  <script type="text/javascript" src="js/jquery.omniviewer-wdgt.js"></script>
+  <script type="text/javascript" src="ext-plugin/jquery.mousewheel.js"></script>
+  <!-- syntaxhighlighter -->
+  <script type="text/javascript" src="ext-syntaxhighlighter/scripts/shCore.js"></script>
+  <script type="text/javascript" src="ext-syntaxhighlighter/scripts/shBrushJScript.js"></script>
+  <link type="text/css" rel="stylesheet" href="ext-syntaxhighlighter/styles/shCoreDefault.css"/>
+  <link type="text/css" rel="stylesheet" href="tutorials.css"/>
+
+<script type="text/javascript">
+    var server = 'http://www.mr56k.info/ow/ow_zoom_flav'; 
+    var images = ['GB-CA_Add.128_8_r'];
+    var credit = '&copy; CCH';
+    var ow1 = null;
+    var ow2 = null;
+		
+		$(document).ready(function() {
+			SyntaxHighlighter.all();
+			
+			
+			
+			$("#ex0").button().click(function(){
+				ow1 = $("#ow_1").OmniViewer({
+				image: ['VF_0178']
+				,server: 'http://images.cch.kcl.ac.uk/dev/ow_zoom_flav'
+				//,credit: credit
+				,zoom: 5
+				,render: 'random'
+                ,showNavButtons: true
+                ,showNavigation: true
+                ,debug : true
+                ,fileFormat: "zoomify"
+				,mode : null
+			}).css("width","800px").css("height","800px").css("float","left").css("border","1px solid black").css("margin-right","100px");
+					
+				ow2 = $("#ow_2").OmniViewer({
+						image: ['VF_0178']
+						,server: 'http://images.cch.kcl.ac.uk/dev/ow_zoom_flav'
+						//,credit: credit
+						,zoom: 1
+						,render: 'random'
+						,showNavButtons: true
+						,showNavigation: true
+						,debug : true
+						,fileFormat:"zoomify"
+						,mode : null
+					}).css("width","800px").css("height","800px").css("float","left");
+			
+			});
+			
+			$("#ex1").button().click(function(){
+				var ow1_z_l = ow1.OmniViewer("getZoomLevel");
+				var ow2_z_l = ow2.OmniViewer("getZoomLevel")
+				//alert("ow1 zoom level: "+ow1_z_l+"\n"+"ow2 zoom level: "+ow2_z_l);
+				if(ow1_z_l != ow2_z_l){
+					// if not, say somehting
+					//alert("diff zoom level detected");
+					while(ow1.OmniViewer("getZoomLevel") != ow2.OmniViewer("getZoomLevel")){
+						if(ow1.OmniViewer("getZoomLevel") < ow2.OmniViewer("getZoomLevel")){
+							ow2.OmniViewer("zoomOut");
+						}
+						else{
+							ow2.OmniViewer("zoomIn");
+						}
+					}
+				}
+				//alert("ow1 zoom level: "+ ow1.OmniViewer("getZoomLevel") +"\n"+"ow2 zoom level: "+ ow2.OmniViewer("getZoomLevel"));
+			});	 
+			
+			$("#ex2").button().click(function(){
+
+					ow1.OmniViewer({
+					scrollTo:function(event, data) {
+						console.info(data);
+						ow2.OmniViewer("scrollTo", data.dx, data.dy);
+					}
+					}); 
+			
+				console.info(ow2.OmniViewer("getLastXY"));
+				if(ow1.OmniViewer("getLastXY") != ow2.OmniViewer("getLastXY")){
+					console.info(ow1.OmniViewer("getLastXY"));
+					ow2.OmniViewer("scrollTo",ow1.OmniViewer("getLastXY")[0]-ow2.OmniViewer("getLastXY")[0],ow1.OmniViewer("getLastXY")[1]-ow2.OmniViewer("getLastXY")[1]);
+				}
+			
+			});	  
+			
+		});	
+		
+		
+	
+  </script>
+
+ </head>
+
+ <body>
+ 	<h1>jQuery OmniViewer Tutorial</h1>
+	<h2>Synchronised viewers</h2>
+
+   	<div id="steps">
+		<div class="step">
+		<h3>Initialise two OW instances</h3>
+		<pre class="brush: js">
+					// first instance
+					var ow1 = $("#ow_1").OmniViewer({
+						// the name of the directory containing the pre-zoomified image
+						image: ['VF_0178']
+						// the path to the root folder containing the pre-zoomified image directories 
+						,server: 'http://images.cch.kcl.ac.uk/dev/ow_zoom_flav'
+						,credit: credit
+						,zoom: 5
+						,render: 'random'
+						,showNavButtons: true
+						,showNavigation: true
+						,debug : true
+						,fileFormat: "zoomify"
+					}).css("width","800px").css("height","800px").css("float","left").css("border","1px solid black").css("margin-right","100px");
+					
+					// second instance
+					var ow2 = $("#ow_2").OmniViewer({
+						image: ['VF_0178']
+						,server: 'http://images.cch.kcl.ac.uk/dev/ow_zoom_flav'
+						,credit: credit
+						,zoom: 0
+						,render: 'random'
+						,showNavButtons: true
+						,showNavigation: true
+						,debug : true
+						,fileFormat:"zoomify"
+						,mode : null
+					}).css("width","800px").css("height","800px");
+		</pre>
+		<p>The code above initialises two separate OW instances displaying the same image.</p>
+		<p>They have been intentionally set with different start zoom level, respectively ow1 = 5, ow2 = 0.</p>
+		<span id="ex0">Click to execute example!</span>
+		</div>
+		
+		<div class="step">
+			<h3>Align zoom level</h3>
+			<pre class="brush: js">
+			var ow1_z_l = ow1.OmniViewer("getZoomLevel");
+			var ow2_z_l = ow2.OmniViewer("getZoomLevel");
+			// check if the two zoom levels equal
+			alert("ow1 zoom level: "+ow1_z_l+"\n"+"ow2 zoom level: "+ow2_z_l);
+			if(ow1_z_l != ow2_z_l){
+				// if not, say somehting
+				alert("diff zoom level detected");
+				while(ow1.OmniViewer("getZoomLevel") != ow2.OmniViewer("getZoomLevel")){
+					if(ow1.OmniViewer("getZoomLevel") < ow2.OmniViewer("getZoomLevel")){
+						ow2.OmniViewer("zoomOut");
+					}
+					else{
+						ow2.OmniViewer("zoomIn");
+					}
+				}
+			}
+			alert("ow1 zoom level: "+ ow1.OmniViewer("getZoomLevel") +"\n"+"ow2 zoom level: "+ ow2.OmniViewer("getZoomLevel"));
+			</pre>
+				<span id="ex1">Click to execute example!</span>
+		</div>
+		
+		<div class="step">
+			<h3>Align image selection</h3>
+			<pre class="brush: js">
+			//TBD
+			</pre>
+			<span id="ex2">Click to execute example!</span>
+		</div>
+		
+	</div>
+	   	<div id="viewports">
+		<div id="ow_1"></div>
+		<div id="ow_2"></div>
+	</div>
+ </body>
+
+</html>
