@@ -4,16 +4,14 @@
  * @version 1.0.1
  */
 
-/**
-* bla blat
-*/
+
 (function($){
     /** 
      * @name $.cch.OmniViewer
      * @namespace OmniViewer widget
      */
-$.OmniViewer = function(){};
-$.widget("cch.OmniViewer", {
+	$.OmniViewer = function(){};
+	$.widget("cch.OmniViewer", {
 	/** 
 	* @lends $.cch.OmniViewer.prototype 
 	* @extends $.cch.OmniViewer
@@ -156,7 +154,10 @@ $.widget("cch.OmniViewer", {
 		
 		return;
 	},
-	
+	/**
+	Creates and injects into the DOM the elements of the UI, mainly a navigation window and a set of navigation buttons.
+	Calls _calculateMinSizes() and _createNavigationWindow().
+	*/
 	_createWindows : function(){
 		this._info("createWindows called");
 		var winWidth = this.element.width();
@@ -250,7 +251,10 @@ $.widget("cch.OmniViewer", {
     	
 		return;
 	},
-	
+	/**
+	* This function is fired only when the omniviewer instance was initialised with fileFormat="zoomify".
+	* What it does is to go through the zoomified image directory and initialise some variables.
+	*/
 	_initialiseZoomify : function(){
 		var tiles = [2];
 		var imageSize =  [2];
@@ -302,7 +306,9 @@ $.widget("cch.OmniViewer", {
    		this.rgn_y = (this.hei-this.rgn_h)/2;
    		this._log("called reCenter %d %d",this.rgn_x,this.rgn_y);
 	},
-	
+	/**
+	Calculates the minimum dimensions for the navigation window.
+	*/
 	_calculateMinSizes : function(){
 		var tx = this.max_width;
 		var ty = this.max_height;
@@ -342,7 +348,9 @@ $.widget("cch.OmniViewer", {
 		this._log("CalcMinSizes: wid=%i hei=%i",this.wid,this.hei);
 		return;
 	},
-	
+	/**
+	* Creates the navigation window where a navigable preview of the image is displayed.  
+	*/
 	_createNavigationWindow : function(){
 		this._log("called createNavigationWindow()");
     	
@@ -425,8 +433,13 @@ $.widget("cch.OmniViewer", {
     	});
     	
     	
+    	if(this.constrainNavigation){
+    		navcontainer.draggable( {containment:this.source, handle:"toolbar"});
+    	}
+    	else{
+    		navcontainer.draggable( {handle:"toolbar"});
+    	}
     	
-    	navcontainer.draggable( {containment:this.source, handle:"toolbar"} );
     	
     	// ADD EVENT BINDINGS TO NAV BUTTONS
     	$(this.guiElements["zoomIn"]).bind( 'click',{self:this}, function(e){e.data.self._zoomIn()});
@@ -455,8 +468,10 @@ $.widget("cch.OmniViewer", {
 		
 		// TODO for the time being I leave behind minor events bound to #zone.click
 	},
-	
-	_zoomIn : function(e){
+	/**
+	* Zooms in and fires the "zoomIn" event.
+	*/
+	_zoomIn : function(){
 		this._trigger("zoomIn", null);
    		if( (this.wid <= (this.max_width/2)) && (this.hei <= (this.max_height/2)) ){
 		   this.res++;
@@ -499,8 +514,10 @@ $.widget("cch.OmniViewer", {
 		 }
 		 return;
 	},
-	
-	_zoomOut : function(e){
+	/**
+	* Zooms out and fires the "zoomOut" event.
+	*/
+	_zoomOut : function(){
 		this._trigger("zoomOut", null);
    		if( (this.wid > this.rgn_w) || (this.hei > this.rgn_h) ){
 		  this.res--;
@@ -540,8 +557,7 @@ $.widget("cch.OmniViewer", {
 		return;
 	},
 	/**
-	@private
-	private method
+	Resets the omniviewer instance to its initialisation values.
 	*/
 	_reset : function(){
 	    this.guiElements["target"].remove();
@@ -811,7 +827,9 @@ $.widget("cch.OmniViewer", {
 		this._loadGrid();
 		// bypassed the refresher for the time being
 	},
-	
+	/** 
+	* Position the zone element (greyish overlay with yellow border) within the navigation window.
+	*/
 	_positionZone : function(){
 		this._log("called positionZone");
    		
@@ -942,6 +960,9 @@ $.widget("cch.OmniViewer", {
     	this.showNavigation = true;
     	if( this.options.showNavigation == false ) this.showNavigation = false;
     	
+    	this.constrainNavigation = true;
+    	if( this.options.constrainNavigation == false ) this.constrainNavigation = false;
+    	
     	// If we want to assign a function for a click within the image
     	// - used for multispectral curve visualization, for example
     	this.targetclick = this.options.targetclick || null;
@@ -1046,11 +1067,18 @@ $.widget("cch.OmniViewer", {
 	reset:function(){
 		this._reset();
 	},
-	
+	/**
+	* Zoom out and triggers the "zoomOut" event
+	*/
 	zoomOut:function(){
 		this._zoomOut();
 	},
-	
+	/**
+	* Return the X,Y of the current viewport. 
+	* The value returned can be used as input parameter to call another instance's scrollTo method 
+	* in order to "force" it to visualise a given selection of the image.
+	* @ returns {Array} An array of integers being the X,Y of the current viewport. [0] is the X, whereas [1] is the Y. 
+	*/
 	getLastXY:function(){
 		return new Array(this.rgn_x,this.rgn_y);
 	},

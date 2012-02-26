@@ -86,21 +86,36 @@
 			});	 
 			
 			$("#ex2").button().click(function(){
-
-					ow1.OmniViewer({
-					scrollTo:function(event, data) {
-						console.info(data);
-						ow2.OmniViewer("scrollTo", data.dx, data.dy);
-					}
-					}); 
-			
-				console.info(ow2.OmniViewer("getLastXY"));
-				if(ow1.OmniViewer("getLastXY") != ow2.OmniViewer("getLastXY")){
+				// get the current position (x,y) of ow1's viewport, and log it to the console
+				var ow1_xy = ow1.OmniViewer("getLastXY");
+				console.info("ow1 current x,y are: %s",ow1_xy);
+				
+				// get the current position (x,y) of ow2's viewport, and log it to the console
+				var ow2_xy = ow2.OmniViewer("getLastXY");
+				console.info("ow2 current x,y are: %s",ow2_xy);
+				
+				// if the x,y of the two omniviewer instances differ, set them to the value of ow1
+				if(ow1_xy != ow2_xy){
 					console.info(ow1.OmniViewer("getLastXY"));
-					ow2.OmniViewer("scrollTo",ow1.OmniViewer("getLastXY")[0]-ow2.OmniViewer("getLastXY")[0],ow1.OmniViewer("getLastXY")[1]-ow2.OmniViewer("getLastXY")[1]);
+					ow2.OmniViewer("scrollTo",ow1_xy[0]-ow2_xy[0],ow1_xy[1]-ow2_xy[1]);
 				}
+			});	 
 			
-			});	  
+			$("#ex3").button().click(function(){
+				/*
+				* Set a callback for the "scrollTo" event, so that whenever the event is fired in ow1,
+				* the viewport in ow2 is changed to mirror ow1.
+				*/
+				ow1.OmniViewer({
+					// here we assign a callback to ow1's scrollTo event
+					scrollTo:function(event, data) {
+						// the call back logs the event data to the console first...
+						console.info(data);
+						// ... and then calls the "scrollTo" method of ow2, passing as dx and dy values, ow1's dx and dy 
+						ow2.OmniViewer("scrollTo", data.dx, data.dy);
+					}	
+				}); 
+			});	 
 			
 		});	
 		
@@ -113,10 +128,20 @@
  <body>
  	<h1>jQuery OmniViewer Tutorial</h1>
 	<h2>Synchronised viewers</h2>
-
+	<p>The purpose of this tutorial is to explain, interactively and step-by-step, what it takes to create a synchronised browsing between two Omniviewer instances.</p>
+	<p>You may want to adapt the examples' code to fit your application design, but they cover the essential steps needed for the synchronisation. These steps are
+	<ol>
+		<li>initialise two omniviewer instances</li>
+		<li>align their current zooom level, in case is different</li>
+		<li>make sure that the same portions of the image is in the viewport of both of them</li>
+		<li>add a callback to the scrollTo event to activate the synchronised browsing</li>
+	</ol>
+	</p>
    	<div id="steps">
 		<div class="step">
-		<h3>Initialise two OW instances</h3>
+		<h3>1. Initialise two OW instances</h3>
+		<p>The code here below initialises two separate OW instances displaying the same image.</p>
+		<p>They have been intentionally initialised with different start zoom level, respectively ow1 = 5, ow2 = 0.</p>
 		<pre class="brush: js">
 					// first instance
 					var ow1 = $("#ow_1").OmniViewer({
@@ -147,13 +172,11 @@
 						,mode : null
 					}).css("width","800px").css("height","800px");
 		</pre>
-		<p>The code above initialises two separate OW instances displaying the same image.</p>
-		<p>They have been intentionally set with different start zoom level, respectively ow1 = 5, ow2 = 0.</p>
 		<span id="ex0">Click to execute example!</span>
 		</div>
 		
 		<div class="step">
-			<h3>Align zoom level</h3>
+			<h3>2. Align zoom level</h3>
 			<pre class="brush: js">
 			var ow1_z_l = ow1.OmniViewer("getZoomLevel");
 			var ow2_z_l = ow2.OmniViewer("getZoomLevel");
@@ -177,13 +200,48 @@
 		</div>
 		
 		<div class="step">
-			<h3>Align image selection</h3>
+			<h3>3. Align image selection</h3>
+			<p>To see this example in action, make sure you select a different part of the image in one of the two viewers.</p>
 			<pre class="brush: js">
-			//TBD
+				// get the current position (x,y) of ow1's viewport, and log it to the console
+				var ow1_xy = ow1.OmniViewer("getLastXY");
+				console.info("ow1 current x,y are: %s",ow1_xy);
+				
+				// get the current position (x,y) of ow2's viewport, and log it to the console
+				var ow2_xy = ow2.OmniViewer("getLastXY");
+				console.info("ow2 current x,y are: %s",ow2_xy);
+				
+				// if the x,y of the two omniviewer instances differ, set them to the value of ow1
+				if(ow1_xy != ow2_xy){
+					console.info(ow1.OmniViewer("getLastXY"));
+					ow2.OmniViewer("scrollTo",ow1_xy[0]-ow2_xy[0],ow1_xy[1]-ow2_xy[1]);
+				}
 			</pre>
 			<span id="ex2">Click to execute example!</span>
 		</div>
-		
+	
+		<div class="step">
+			<h3>4. Synchronise the two viewers</h3>
+			<p>In order to understand how the synchronisation works and can be implemented you should keep in mind that is never bidirectional.</p>
+			<p>This means that either you sinchronise the two viewers so that ow1 <em>drives</em> ow2, or the other way round.</p>
+			<p>In this example ow1 drives ow2. The way this is done is by using an event-driven approach.</p>
+			<pre class="brush: js">
+				/*
+				* Set a callback for the "scrollTo" event, so that whenever the event is fired in ow1,
+				* the viewport in ow2 is changed to mirror ow1.
+				*/
+				ow1.OmniViewer({
+					// here we assign a callback to ow1's scrollTo event
+					scrollTo:function(event, data) {
+						// the call back logs the event data to the console first...
+						console.info(data);
+						// ... and then calls the "scrollTo" method of ow2, passing as dx and dy values, ow1's dx and dy 
+						ow2.OmniViewer("scrollTo", data.dx, data.dy);
+					}	
+				}); 
+			</pre>
+			<span id="ex3">Click to execute example!</span>
+		</div>
 	</div>
 	   	<div id="viewports">
 		<div id="ow_1"></div>
