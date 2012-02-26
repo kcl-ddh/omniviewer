@@ -4,14 +4,25 @@
  * @version 1.0.1
  */
 
+/**
+* bla blat
+*/
 (function($){
-    /** @name $.cch.OmniViewer
+    /** 
+     * @name $.cch.OmniViewer
      * @namespace OmniViewer widget
      */
 $.OmniViewer = function(){};
 $.widget("cch.OmniViewer", {
-	/** @lends $.cch.OmniViewer.prototype */
+	/** 
+	* @lends $.cch.OmniViewer.prototype 
+	* @extends $.cch.OmniViewer
+	*/
 	options: {
+		/**
+		* initialise the option default values
+		* they can be overwritten when initialising the plugin
+		*/
         value: 0,
         debug: true,
         target_tmpl : $.template(null, "<div class=\"${className}\" style=\"cursor:move;\"></div>" ),
@@ -28,10 +39,6 @@ $.widget("cch.OmniViewer", {
         
         shiftDownButton_tmpl :$.template(null, "<img class=\"${className}\" src=\"${imgPath}\"/><br/>" ),
         shiftDownButton_tmpl_data : [{imgPath:'images/down.png',className:'shiftDown'}],
-        
-        //var zi = $('<img/>').addClass("zoomIn").attr("src","images/zoomIn.png");
-    	//var zo = $('<img/>').addClass("zoomOut").attr("src","images/zoomOut.png");
-    	//var re = $('<img/>').addClass("reset").attr("src","images/reset.png");
     	
     	zoomInButton_tmpl :$.template(null, "<img class=\"${className}\" src=\"${imgPath}\"/>" ),
         zoomInButton_tmpl_data : [{imgPath:'images/zoomIn.png',className:'zoomIn'}],
@@ -43,14 +50,19 @@ $.widget("cch.OmniViewer", {
         resetButton_tmpl_data : [{imgPath:'images/reset.png',className:'reset'}],
     	
     },
-	
+	/**
+	* First function to be called: triggers the plugin initialisation
+	*/
 	_create: function() {
 		this.debug = this.options.debug;
 	    this._initialise();
 	    this.element
             .addClass("ow");
 	},
-	
+	/*
+	* According to the different "flavour" of the plugin (i.e. "djatoka"|"zoomify"|"iip")
+	* a different load function is called
+	*/
 	_load:function(){
 		/*
 		* Calls the IIPImage server
@@ -224,6 +236,11 @@ $.widget("cch.OmniViewer", {
     	$(window).resize(function() {
  			window.location=window.location;
 		});
+		
+		if( this.credit ){
+      		// new Element( 'div', {id: 'credit', html: this.credit} ).injectInside(this.source);
+      		// here goes the code to display the credit
+    	}
     	
     	for(var i=0;i<this.initialZoom;i++) this._zoomIn();
 
@@ -522,9 +539,13 @@ $.widget("cch.OmniViewer", {
 		}
 		return;
 	},
-	
+	/**
+	@private
+	private method
+	*/
 	_reset : function(){
-	    this.destroy();
+	    this.guiElements["target"].remove();
+		$(this.source+" > "+"div.navcontainer").remove();
 	    this._initialise();	
 	},
 	
@@ -747,32 +768,6 @@ $.widget("cch.OmniViewer", {
 	        m = m * 2;
 	    }
 	    return m;
-	},
-	
-	// public methods
-	scrollTo:function(dx,dy){
-		this._log("values %s, %s",dx,dy);
-		this._scrollTo(dx,dy);
-	},
-	
-	getZoomLevel:function(){
-		return this.res;
-	},
-	
-	zoomIn:function(){
-		this._zoomIn();
-	},
-	
-	reset:function(){
-		this._reset();
-	},
-	
-	zoomOut:function(){
-		this._zoomOut();
-	},
-	
-	getLastXY:function(){
-		return new Array(this.rgn_x,this.rgn_y);
 	},
 	
 	_refreshLoadBar:function(){
@@ -1020,7 +1015,55 @@ $.widget("cch.OmniViewer", {
 		this.resetButton_tmpl_data = this.options.resetButton_tmpl_data;
 		this._load();
 	},
-	    /** destroy */
+	/**
+	A proxy for the private ._scrollTo function.
+	Causes the omniviewer to scroll to the specified 
+	
+	* @param dx the X point for the scrolling
+	* @param dy the Y point for the scrolling
+	*/
+	scrollTo:function(dx,dy){
+		this._log("values %s, %s",dx,dy);
+		this._scrollTo(dx,dy);
+	},
+	/**
+	* Returns the current zoom level.
+	* @returns {Number} the current zoom level
+	*/
+	getZoomLevel:function(){
+		return this.res;
+	},
+	/**
+	* Zoom in and triggers the "zoomIn" event
+	*/
+	zoomIn:function(){
+		this._zoomIn();
+	},
+	/**
+	Resets the omniviewer instance to its initial status, that is by re-initialising 
+	it with the values passed to the constructor when it was first initialised.
+	*/
+	reset:function(){
+		this._reset();
+	},
+	
+	zoomOut:function(){
+		this._zoomOut();
+	},
+	
+	getLastXY:function(){
+		return new Array(this.rgn_x,this.rgn_y);
+	},
+	/**
+	* Destroys an omniviewer instance.
+	What the function does in detail is:
+	<ol>
+		<li>call $.Widget.prototype.destroy</li>
+		<li>remove from the DOM the elements that are part of the omniviewer UI</li>
+		<li>resets the CSS width and height of the element</li>
+	</ol>
+	
+	*/
 	destroy:function(){
 		$.Widget.prototype.destroy.apply(this, arguments); 
 		this.guiElements["target"].remove();
