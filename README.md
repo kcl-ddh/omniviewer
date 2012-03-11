@@ -14,7 +14,7 @@ Dependencies
 Content
 =======
 
-* [documentation](tree/master/documentation/): contains the static documentation for OW
+* [documentation](omniviewer/tree/master/documentation/): contains the static documentation for OW
 
 TODO
 ====
