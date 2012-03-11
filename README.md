@@ -30,3 +30,6 @@ The Djatoka support is a jQuery port of the Djatoka viewer's code.
 
 TODO
 ====
+
+* test thoroughly browser support (especially IE)
+* create a tutorial for the use of jquery templating system 
