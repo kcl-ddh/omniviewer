@@ -1,7 +1,7 @@
 /**
  * @fileOverview
  * @author <a href="mailto:matteo.romanello@gmail.com">Matteo Romanello</a>
- * @version 1.0.1
+ * @version 1.1.0
  */
 
 
@@ -1105,7 +1105,7 @@
 	       @returns {String} the current version
 	     */
 	    version: function(){
-		return "1.0.1";
+		return "1.1.0";
 	}
 });
 })(jQuery);
