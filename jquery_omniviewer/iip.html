@@ -22,13 +22,13 @@
   <script type="text/javascript">
 
     // The iipsrv server path (/fcgi-bin/iipsrv.fcgi by default)
-    var server = '/cgi-bin/iipsrv.fcgi';
+    var server = '/iip/iipsrv.fcgi';
 
     // The *full* image path on the server. This path does *not* need to be in the web
     // server root directory. On Windows, use Unix style forward slash paths without
     // the "c:" prefix
-    var images = ['/var/www/ow/ow_iip_flav/cch_image.tif'];
-	//var images = '/Users/56k/phd/code/mooviewer-port/moov-demo/cch_image.tif';
+    // var images = ['/var/www/ow/ow_iip_flav/cch_image.tif'];
+	var images = ['GB-Cpc_485_a5c.jp2']
     // Copyright or information message
     var credit = '&copy; CCH';
     
@@ -47,7 +47,7 @@
                 ,debug : true
                 
                 ,shiftLeftButton_tmpl :$.template(null, "<img title=\"Shift Left Button\" class=\"${className}\" src=\"${imgPath}\"/>" )
-                ,shiftLeftButton_tmpl_data : [{imgPath:'imagez/left.png',className:'shiftLeft'}]
+                ,shiftLeftButton_tmpl_data : [{imgPath:'images/left.png',className:'shiftLeft'}]
                 ,shiftRightButton_tmpl :$.template(null, "<img title=\"Shift Right Button\" class=\"${className}\" src=\"${imgPath}\"/><br />" )
                 ,shiftUpButton_tmpl :$.template(null, "<img title=\"Shift Up Button\" class=\"${className}\" src=\"${imgPath}\"/>" )
                 ,shiftDownButton_tmpl :$.template(null, "<img title=\"Shift Down Button\" class=\"${className}\" src=\"${imgPath}\"/><br />" )
@@ -65,12 +65,8 @@
  </head>
 
  <body>
- <div><a href="">Previous page in source</a> <a href="">Next page in source</a></div>
- 
-<td><div id="ow1"></div></td>
-<td><div id="ow2"></div></td>
-
-
+	<h1>OmniViewer Demo &dash; IIP flavour</h1>
+	<div id="ow1">
  </body>
 
 </html>
